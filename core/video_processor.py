@@ -1,12 +1,13 @@
 """
 ROADGUARD AI - Video Processing Engine
 Module: core/video_processor.py
+Version: 2.1.0
 
 Executes end-to-end dashcam video analysis:
-- Frame extraction
-- YOLO defect detection
-- Severity assessment
+- Frame extraction with configurable stride
+- YOLO defect detection with video context
 - Multi-frame object tracking and deduplication
+- Temporal severity adjustment (distinguishing confirmed vs. transient)
 - High-contrast HUD annotation
 - Real-time progress monitoring
 - Safe OpenCV resource release
@@ -70,6 +71,7 @@ class VideoProcessor:
             "estimated_remaining_sec": 0.0,
             "total_frame_detections": 0,
             "unique_defects_count": 0,
+            "transient_defects_count": 0,
             "error": None
         }
 
@@ -114,7 +116,7 @@ class VideoProcessor:
         # Ensure parent directory for output exists
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-        # Setup VideoWriter with best compatible codec
+        # Setup VideoWriter with best compatible codec (mp4v prioritized on Windows)
         writer = None
         codecs_to_try = [
             ("mp4v", ".mp4"),
@@ -136,7 +138,6 @@ class VideoProcessor:
                 continue
 
         if writer is None or not writer.isOpened():
-            # Final fallback to standard mp4v
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             actual_output_path = os.path.splitext(output_path)[0] + ".mp4"
             writer = cv2.VideoWriter(actual_output_path, fourcc, video_fps, (width, height))
@@ -173,11 +174,12 @@ class VideoProcessor:
 
                 processed_frames_count += 1
 
-                # 1. Run YOLO inference & severity scoring
+                # 1. Run YOLO inference with video context
                 _, raw_detections, _ = self.detector.detect(
                     frame,
                     conf=conf_threshold,
-                    imgsz=config.DEFAULT_IMGSZ
+                    imgsz=config.DEFAULT_IMGSZ,
+                    context={"is_video": True}
                 )
                 total_frame_detections += len(raw_detections)
 
@@ -190,12 +192,13 @@ class VideoProcessor:
                     self.detector._draw_detection_overlay(annotated_frame, det)
 
                 # Draw top HUD Status Banner
+                confirmed_active = sum(1 for t in tracker.active_tracks if t.is_confirmed)
                 self._draw_hud_banner(
                     annotated_frame,
                     frame_idx=frame_idx,
                     total_frames=total_frames,
                     fps=video_fps,
-                    active_tracks_count=len(tracker.active_tracks),
+                    confirmed_tracks_count=confirmed_active,
                     total_frame_detections=total_frame_detections
                 )
 
@@ -209,6 +212,9 @@ class VideoProcessor:
                 est_remaining = remaining_frames / (fps_proc * frame_stride) if fps_proc > 0 else 0.0
                 percent = min(100.0, (frame_idx / total_frames) * 100.0) if total_frames > 0 else 0.0
 
+                confirmed_count = len(tracker.confirmed_history) + confirmed_active
+                transient_count = len(tracker.transient_history) + (len(tracker.active_tracks) - confirmed_active)
+
                 self.progress_state.update({
                     "percent": round(percent, 1),
                     "current_frame": frame_idx,
@@ -216,7 +222,8 @@ class VideoProcessor:
                     "time_elapsed_sec": round(elapsed, 1),
                     "estimated_remaining_sec": round(est_remaining, 1),
                     "total_frame_detections": total_frame_detections,
-                    "unique_defects_count": len(tracker.all_confirmed_defects) + len(tracker.active_tracks)
+                    "unique_defects_count": confirmed_count,
+                    "transient_defects_count": transient_count
                 })
 
                 if progress_callback and (frame_idx % 10 == 0 or frame_idx == total_frames):
@@ -231,32 +238,37 @@ class VideoProcessor:
             if writer is not None:
                 writer.release()
 
-        # Finalize tracking and deduplication
-        unique_defects = tracker.finalize()
+        # Finalize tracking session (returns confirmed and transient defects)
+        all_unique_defects = tracker.finalize()
         total_duration = time.time() - start_time
 
-        # Calculate summary distributions across unique defects
+        confirmed_defects = [d for d in all_unique_defects if d.get("is_confirmed", False)]
+        transient_defects = [d for d in all_unique_defects if not d.get("is_confirmed", False)]
+
+        # Calculate summary distributions across confirmed defects (or all if none confirmed)
+        eval_set = confirmed_defects if confirmed_defects else all_unique_defects
+
         class_dist = {code: 0 for code in config.CLASS_CODES.values()}
         sev_dist = {"CRITICAL": 0, "HIGH": 0, "MODERATE": 0, "LOW": 0}
         highest_score = 0.0
         highest_level = "LOW"
         conf_sum = 0.0
 
-        for d in unique_defects:
+        for d in eval_set:
             code = d.get("class_code", "OTHER")
             class_dist[code] = class_dist.get(code, 0) + 1
 
             level = d.get("severity_level", "LOW")
             sev_dist[level] = sev_dist.get(level, 0) + 1
 
-            score = d.get("severity_score", 0.0)
+            score = float(d.get("severity_score", 0.0))
             if score > highest_score:
                 highest_score = score
                 highest_level = level
 
-            conf_sum += d.get("confidence", 0.0)
+            conf_sum += float(d.get("confidence", 0.0))
 
-        avg_conf = conf_sum / len(unique_defects) if unique_defects else 0.0
+        avg_conf = conf_sum / len(eval_set) if eval_set else 0.0
 
         self.progress_state["status"] = "completed"
         self.progress_state["percent"] = 100.0
@@ -265,8 +277,12 @@ class VideoProcessor:
             "output_path": actual_output_path,
             "total_frames_processed": frame_idx,
             "total_frame_detections": total_frame_detections,
-            "unique_defects_count": len(unique_defects),
-            "unique_defects": unique_defects,
+            "unique_defects_count": len(confirmed_defects),
+            "transient_defects_count": len(transient_defects),
+            "total_unique_records": len(all_unique_defects),
+            "unique_defects": all_unique_defects,
+            "confirmed_defects": confirmed_defects,
+            "transient_defects": transient_defects,
             "damage_type_distribution": class_dist,
             "severity_distribution": sev_dist,
             "highest_severity_score": round(highest_score, 1),
@@ -286,10 +302,10 @@ class VideoProcessor:
         frame_idx: int,
         total_frames: int,
         fps: float,
-        active_tracks_count: int,
+        confirmed_tracks_count: int,
         total_frame_detections: int
     ):
-        """Draw an unobtrusive, professional analytics banner across top of frame."""
+        """Draw an unobtrusive analytics banner across the top of the video frame."""
         h, w = frame.shape[:2]
         banner_h = 36
 
@@ -298,16 +314,16 @@ class VideoProcessor:
         cv2.rectangle(overlay, (0, 0), (w, banner_h), (12, 17, 28), -1)
         cv2.addWeighted(overlay, 0.75, frame, 0.25, 0, frame)
 
-        # Bottom accent line
+        # Cyan accent line
         cv2.line(frame, (0, banner_h), (w, banner_h), (6, 182, 212), 1)
 
-        # Text information
+        # Header information
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 0.45
         color = (240, 240, 240)
 
-        t1 = f"ROADGUARD AI | Frame: {frame_idx}/{total_frames} ({fps:.0f} FPS)"
-        t2 = f"Active Tracks: {active_tracks_count} | Detections: {total_frame_detections}"
+        t1 = f"ROADGUARD AI v2.1 | Frame: {frame_idx}/{total_frames} ({fps:.0f} FPS)"
+        t2 = f"Confirmed Tracks: {confirmed_tracks_count} | Detections: {total_frame_detections}"
 
         cv2.putText(frame, t1, (15, 23), font, font_scale, color, 1, cv2.LINE_AA)
         (tw, _), _ = cv2.getTextSize(t2, font, font_scale, 1)

@@ -15,7 +15,7 @@ def test_detector_initialization():
     status = detector.get_status()
     assert "status" in status
     assert "device" in status
-    assert status["status"] in ("READY_CUSTOM", "READY_FALLBACK", "WEIGHTS_MISSING")
+    assert status["status"] in ("READY_CUSTOM", "CUSTOM_MODEL_MISSING", "WEIGHTS_MISSING")
 
 
 def test_class_name_normalization():

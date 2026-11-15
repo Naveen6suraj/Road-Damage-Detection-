@@ -36,8 +36,10 @@ def generate_csv_report(
 
     fieldnames = [
         "Analysis_ID", "Created_At", "Media_Type", "File_Name",
-        "Defect_Number", "Track_ID", "Class_Code", "Class_Name",
+        "Defect_Number", "Track_ID", "Status", "Class_Code", "Class_Name",
         "Confidence_Percent", "Severity_Score", "Severity_Level",
+        "Raw_Severity_Score", "Raw_Severity_Level",
+        "Adjusted_Severity_Score", "Adjusted_Severity_Level",
         "Frame_Index", "Timestamp_Sec", "BBox_X1", "BBox_Y1", "BBox_X2", "BBox_Y2",
         "Assessment_Reason"
     ]
@@ -54,11 +56,16 @@ def generate_csv_report(
                 "File_Name": filename,
                 "Defect_Number": 0,
                 "Track_ID": "N/A",
+                "Status": "N/A",
                 "Class_Code": "NONE",
                 "Class_Name": "No Defects Detected",
                 "Confidence_Percent": "0.0",
                 "Severity_Score": "0.0",
                 "Severity_Level": "NONE",
+                "Raw_Severity_Score": "0.0",
+                "Raw_Severity_Level": "NONE",
+                "Adjusted_Severity_Score": "0.0",
+                "Adjusted_Severity_Level": "NONE",
                 "Frame_Index": "N/A",
                 "Timestamp_Sec": "N/A",
                 "BBox_X1": "0", "BBox_Y1": "0", "BBox_X2": "0", "BBox_Y2": "0",
@@ -71,6 +78,13 @@ def generate_csv_report(
                     box = [det["box_x1"], det["box_y1"], det["box_x2"], det["box_y2"]]
 
                 conf = float(det.get("confidence", 0.0)) * 100.0
+                is_conf = det.get("is_confirmed", True)
+                status_str = "Confirmed" if is_conf else "Transient"
+                raw_score = float(det.get("raw_severity_score", det.get("severity_score", 0.0)))
+                raw_level = det.get("raw_severity_level", config.get_severity_level(raw_score))
+                adj_score = float(det.get("severity_score", 0.0))
+                adj_level = det.get("severity_level", config.get_severity_level(adj_score))
+
                 writer.writerow({
                     "Analysis_ID": analysis_id,
                     "Created_At": created_at,
@@ -78,11 +92,16 @@ def generate_csv_report(
                     "File_Name": filename,
                     "Defect_Number": idx,
                     "Track_ID": det.get("track_id", "N/A"),
+                    "Status": status_str,
                     "Class_Code": det.get("class_code", "OTHER"),
                     "Class_Name": det.get("class_name", "Unknown"),
                     "Confidence_Percent": f"{conf:.1f}",
-                    "Severity_Score": f"{float(det.get('severity_score', 0.0)):.1f}",
-                    "Severity_Level": det.get("severity_level", "LOW"),
+                    "Severity_Score": f"{adj_score:.1f}",
+                    "Severity_Level": adj_level,
+                    "Raw_Severity_Score": f"{raw_score:.1f}",
+                    "Raw_Severity_Level": raw_level,
+                    "Adjusted_Severity_Score": f"{adj_score:.1f}",
+                    "Adjusted_Severity_Level": adj_level,
                     "Frame_Index": det.get("frame_index", "N/A"),
                     "Timestamp_Sec": det.get("timestamp_sec", det.get("first_timestamp_sec", "N/A")),
                     "BBox_X1": round(box[0], 1) if box else 0,
@@ -293,9 +312,10 @@ def generate_pdf_report(
             Paragraph("<b>#</b>", cell_bold),
             Paragraph("<b>Track ID</b>", cell_bold),
             Paragraph("<b>Category (Code)</b>", cell_bold),
+            Paragraph("<b>Status</b>", cell_bold),
             Paragraph("<b>Conf</b>", cell_bold),
+            Paragraph("<b>Score (Raw/Adj)</b>", cell_bold),
             Paragraph("<b>Severity</b>", cell_bold),
-            Paragraph("<b>Score</b>", cell_bold),
             Paragraph("<b>Assessment Rationale</b>", cell_bold)
         ]
     ]
@@ -306,15 +326,19 @@ def generate_pdf_report(
             Paragraph("-", cell_style),
             Paragraph("No Defects Detected", cell_style),
             Paragraph("-", cell_style),
+            Paragraph("-", cell_style),
+            Paragraph("0.0 / 0.0", cell_style),
             Paragraph("NONE", cell_style),
-            Paragraph("0.0", cell_style),
             Paragraph("No pavement defects observed above the specified confidence threshold.", cell_style)
         ])
     else:
         # Cap printed rows in PDF to 50 for clean presentation
         for idx, det in enumerate(detections[:50], 1):
-            sev_lvl = det.get("severity_level", "LOW")
-            sev_score = float(det.get("severity_score", 0.0))
+            is_conf = det.get("is_confirmed", True)
+            status_text = "Confirmed" if is_conf else "Transient"
+            raw_s = float(det.get("raw_severity_score", det.get("severity_score", 0.0)))
+            adj_s = float(det.get("severity_score", 0.0))
+            sev_lvl = det.get("severity_level", config.get_severity_level(adj_s))
             conf = float(det.get("confidence", 0.0)) * 100
             code = det.get("class_code", "OTHER")
             name = det.get("class_name", "Unknown")
@@ -324,17 +348,21 @@ def generate_pdf_report(
             if len(reason) > 95:
                 reason = reason[:92] + "..."
 
+            status_style = cell_bold if is_conf else cell_style
+            score_text = f"{raw_s:.1f} / {adj_s:.1f}"
+
             table_rows.append([
                 Paragraph(str(idx), cell_style),
                 Paragraph(track_id, cell_style),
                 Paragraph(f"{name} ({code})", cell_style),
+                Paragraph(status_text, status_style),
                 Paragraph(f"{conf:.0f}%", cell_style),
+                Paragraph(score_text, cell_style),
                 Paragraph(sev_lvl, cell_bold),
-                Paragraph(f"{sev_score:.1f}", cell_style),
                 Paragraph(reason, cell_style)
             ])
 
-    defects_table = Table(table_rows, colWidths=[24, 46, 120, 38, 56, 40, 216])
+    defects_table = Table(table_rows, colWidths=[22, 40, 96, 48, 34, 58, 50, 192])
     defects_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
         ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),

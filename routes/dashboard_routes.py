@@ -105,3 +105,15 @@ def api_system_status():
         "success": True,
         "system": status
     })
+
+
+@dashboard_bp.route("/api/model/status")
+def api_model_status():
+    """Return complete YOLO road damage model status and class verification info."""
+    detector = get_detector()
+    return jsonify({
+        "success": True,
+        "model": detector.get_model_status(),
+        "system": detector.get_status()
+    })
+

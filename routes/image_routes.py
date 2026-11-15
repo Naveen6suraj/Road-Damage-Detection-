@@ -50,6 +50,13 @@ def analyze_image():
 
     # Perform detection & severity estimation
     detector = get_detector()
+    if not detector.inference_enabled:
+        return jsonify({
+            "success": False,
+            "error": "Custom road damage detection model is not available.",
+            "message": "Custom YOLO model trained on road damage (RDD2020) was not found at models/best.pt or lacks required road damage classes (D00, D10, D20, D40). General COCO weights cannot be used for road damage inference.",
+            "model_status": detector.get_model_status()
+        }), 503
     try:
         annotated_bgr, detections, class_counts = detector.detect(
             upload_path,

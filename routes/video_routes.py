@@ -67,6 +67,7 @@ def _execute_video_pipeline(job_id: str, upload_path: str, output_path: str, ori
             "output_path": output_rel_path,
             "total_defects": summary["total_frame_detections"],
             "unique_defects": summary["unique_defects_count"],
+            "transient_defects": summary.get("transient_defects_count", 0),
             "critical_count": summary["severity_distribution"]["CRITICAL"],
             "high_count": summary["severity_distribution"]["HIGH"],
             "moderate_count": summary["severity_distribution"]["MODERATE"],
@@ -113,6 +114,15 @@ def _execute_video_pipeline(job_id: str, upload_path: str, output_path: str, ori
 @video_bp.route("/api/analyze/video", methods=["POST"])
 def api_analyze_video():
     """Async video upload and analysis initiation."""
+    processor = get_video_processor()
+    if not processor.detector.inference_enabled:
+        return jsonify({
+            "success": False,
+            "error": "Custom road damage detection model is not available.",
+            "message": "Custom YOLO model trained on road damage (RDD2020) was not found at models/best.pt or lacks required road damage classes. General COCO weights cannot be used for road damage inference.",
+            "model_status": processor.detector.get_model_status()
+        }), 503
+
     if "file" not in request.files:
         return jsonify({"success": False, "error": "No file uploaded"}), 400
 
@@ -182,6 +192,13 @@ def api_video_progress(job_id):
 @video_bp.route("/predict_video", methods=["POST"])
 def legacy_predict_video():
     """Legacy route providing synchronous response matching original app.py."""
+    processor = get_video_processor()
+    if not processor.detector.inference_enabled:
+        return jsonify({
+            "error": "Custom road damage detection model is not available.",
+            "message": "Custom YOLO model trained on road damage (RDD2020) was not found at models/best.pt or lacks required road damage classes."
+        }), 503
+
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 

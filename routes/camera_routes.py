@@ -26,10 +26,12 @@ def get_detector():
 def process_camera_frame():
     """Process a single live webcam frame transmitted from frontend via WebRTC/Canvas."""
     detector = get_detector()
-    if detector.model is None:
+    if not detector.inference_enabled:
         return jsonify({
             "success": False,
-            "error": "Model weights are not loaded. Place 'best.pt' in models/ directory."
+            "error": "Custom road damage detection model is not available.",
+            "message": "Custom YOLO model trained on road damage (RDD2020) was not found at models/best.pt or lacks required road damage classes.",
+            "model_status": detector.get_model_status()
         }), 503
 
     payload = request.get_json(silent=True) or {}

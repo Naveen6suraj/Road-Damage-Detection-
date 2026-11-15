@@ -89,3 +89,64 @@ def test_tracker_deduplication():
     unique = tracker.finalize()
     assert len(unique) == 1, "Should deduplicate 15 frame detections into 1 unique defect"
     assert unique[0]["hits"] == 15
+
+
+def test_tracker_transient_vs_confirmed():
+    tracker = RoadDefectTracker(iou_threshold=0.3, min_hits=2)
+
+    # Defect A appears for 1 frame only (transient)
+    tracker.update([{
+        "box": [100, 100, 200, 200],
+        "class_code": "D00",
+        "class_name": "Longitudinal Crack",
+        "confidence": 0.65,
+        "raw_severity_score": 25.0
+    }], frame_index=1, timestamp_sec=0.033)
+
+    # Defect B appears for 6 consecutive frames (confirmed and persistent)
+    for i in range(6):
+        tracker.update([{
+            "box": [500 + i * 2, 500 + i * 2, 650 + i * 2, 650 + i * 2],
+            "class_code": "D40",
+            "class_name": "Pothole",
+            "confidence": 0.90,
+            "raw_severity_score": 85.0
+        }], frame_index=i + 1, timestamp_sec=(i + 1) * 0.033)
+
+    results = tracker.finalize()
+    assert len(results) == 2, "Both transient and confirmed defects must be preserved"
+
+    transient_item = [d for d in results if d["class_code"] == "D00"][0]
+    confirmed_item = [d for d in results if d["class_code"] == "D40"][0]
+
+    assert transient_item["is_confirmed"] is False
+    assert transient_item["status"] == "transient"
+    assert transient_item["persistence_adjustment"] == -2.0
+
+    assert confirmed_item["is_confirmed"] is True
+    assert confirmed_item["status"] == "confirmed"
+    assert confirmed_item["persistence_adjustment"] == 3.0
+
+
+def test_tracker_different_classes_no_association():
+    tracker = RoadDefectTracker(iou_threshold=0.3, min_hits=2)
+
+    # Frame 1: Pothole (D40) at [200, 200, 300, 300]
+    tracker.update([{
+        "box": [200, 200, 300, 300],
+        "class_code": "D40",
+        "class_name": "Pothole",
+        "confidence": 0.85
+    }], frame_index=1, timestamp_sec=0.033)
+
+    # Frame 2: Crack (D00) at exact same coordinates
+    tracker.update([{
+        "box": [200, 200, 300, 300],
+        "class_code": "D00",
+        "class_name": "Longitudinal Crack",
+        "confidence": 0.85
+    }], frame_index=2, timestamp_sec=0.066)
+
+    results = tracker.finalize()
+    assert len(results) == 2, "Different defect classes must NOT be associated into same track"
+

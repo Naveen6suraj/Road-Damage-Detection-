@@ -97,7 +97,10 @@ async function executeImageAnalysis() {
         const data = await response.json();
 
         if (!data.success) {
-            alert(`Analysis Error: ${data.error || "Failed to process image"}`);
+            const msg = data.message ? `\n\n${data.message}` : "";
+            alert(`Analysis Notice (${response.status}): ${data.error || "Failed to process image"}${msg}`);
+            btn.disabled = false;
+            loader.classList.add("hidden");
             return;
         }
 
@@ -220,7 +223,8 @@ async function executeVideoAnalysis() {
         const data = await response.json();
 
         if (!data.success) {
-            alert(`Upload Error: ${data.error || "Failed to initiate video processing"}`);
+            const msg = data.message ? `\n\n${data.message}` : "";
+            alert(`Video Analysis Notice (${response.status}): ${data.error || "Failed to initiate video processing"}${msg}`);
             btn.disabled = false;
             progressBox.classList.add("hidden");
             return;

@@ -19,7 +19,8 @@ EXCLUDE_DIRS = {
     ".git",
     ".idea",
     ".vscode",
-    "runs"
+    "runs",
+    "static - Copy"
 }
 
 EXCLUDE_EXTS = {
@@ -27,7 +28,9 @@ EXCLUDE_EXTS = {
     ".pyo",
     ".pyd",
     ".part",
-    ".tmp"
+    ".tmp",
+    ".db-wal",
+    ".db-shm"
 }
 
 

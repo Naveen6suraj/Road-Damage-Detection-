@@ -80,3 +80,28 @@ def test_zero_dimensions_edge_case():
     result = estimate_severity(detection, (0, 0))
     assert 0.0 <= result["severity_score"] <= 100.0
     assert result["severity_level"] in ("LOW", "MODERATE", "HIGH", "CRITICAL")
+
+
+def test_out_of_bounds_and_inverted_bbox():
+    # Box exceeding frame resolution and inverted
+    detection = {"box": [2200, 1500, -50, -100], "class_code": "D40", "confidence": 0.9}
+    result = estimate_severity(detection, (1920, 1080))
+    assert 5.0 <= result["severity_score"] <= 100.0
+    assert "raw_severity_score" in result
+    assert "adjusted_severity_score" in result
+
+
+def test_raw_and_adjusted_severity_distinction():
+    detection = {
+        "box": [800, 750, 1200, 1020],
+        "class_code": "D40",
+        "confidence": 0.95
+    }
+    # Video single frame (transient) should have raw > adjusted
+    res_transient = estimate_severity(detection, (1920, 1080), context={"is_video": True, "track_hits": 1})
+    assert res_transient["raw_severity_score"] >= res_transient["adjusted_severity_score"]
+
+    # Video persistent (>= 5 hits) should have adjusted >= raw
+    res_persistent = estimate_severity(detection, (1920, 1080), context={"is_video": True, "track_hits": 6})
+    assert res_persistent["adjusted_severity_score"] >= res_persistent["raw_severity_score"]
+

@@ -1,22 +1,32 @@
 """
 ROADGUARD AI - Severity Estimation Engine
 Module: core/severity_engine.py
+Version: 2.1.0
 
 Provides an empirical, visual risk scoring methodology for road defects detected
 in single-camera dashcam imagery and video streams.
 
-ACADEMIC DISCLAIMER & METHODOLOGY NOTE:
----------------------------------------
-Physical road defect metrics (such as true depth in millimeters or calibrated
-width in centimeters) cannot be directly measured from monocular 2D images without
-calibrated stereo camera geometry, LiDAR, or structured light sensors.
-This severity engine computes an empirical "Visual Severity Risk Index" (0 - 100),
-derived from:
-1. Defect Category Base Hazard (e.g. pothole vs. superficial crack)
-2. Normalized Relative Damage Area (defect area relative to frame resolution)
-3. Perspective Road Proximity (dashcam horizon vs. near-field vehicle lane zone)
-4. Defect Aspect Ratio / Geometric Distortion
-5. Multi-Frame Temporal Persistence (when processing video streams)
+Mathematical Formulation:
+-------------------------
+S = min(100.0, max(5.0, W_cat + W_area + W_pos + W_geom + Delta_pers))
+
+Components:
+1. Category Hazard (W_cat in [8.0, 35.0]):
+   - Pothole (D40): 35.0
+   - Alligator Crack (D20): 25.0
+   - Transverse Crack (D10): 16.0
+   - Longitudinal Crack (D00): 10.0
+   - Other Corruption (OTHER): 8.0
+2. Normalized Relative Area (W_area in [1.0, 35.0]):
+   - Percentage of total frame area
+3. Perspective Road Proximity (W_pos in [0.0, 20.0]):
+   - Quadratic near-field weighting: 20.0 * (y_norm)^2
+4. Geometric Aspect Ratio (W_geom in [3.0, 10.0]):
+   - Crack elongation vs. pothole/alligator compactness
+5. Temporal Persistence Modifier (Delta_pers):
+   - +3.0 for verified persistent defects (hits >= 5)
+   - -2.0 for single-frame transient detections in video context (hits == 1)
+   - 0.0 otherwise
 
 Detection confidence is maintained as a strictly separate measure representing
 model classification certainty, and is not equated to physical defect severity.
@@ -24,26 +34,16 @@ model classification certainty, and is not equated to physical defect severity.
 
 from typing import Dict, Any, Optional, Tuple
 import math
+import config
+
 
 # Category Base Hazard Mapping (0 - 35 points)
-CLASS_BASE_HAZARD = {
-    "D40": 35.0,   # Pothole: Direct tire, wheel rim, and suspension impact risk
-    "D20": 25.0,   # Alligator Crack: Extensive fatigue cracking, structural base failure
-    "D10": 16.0,   # Transverse Crack: Thermal stress, perpendicular vehicle jolting
-    "D00": 10.0,   # Longitudinal Crack: Longitudinal joint wear, lane-tracking fatigue
-    "OTHER": 8.0   # Other surface corruption, ravelling, or weathering
-}
+CLASS_BASE_HAZARD = config.CLASS_BASE_HAZARD
 
 # Human-readable category labels
-CLASS_LABELS = {
-    "D00": "Longitudinal Crack",
-    "D10": "Transverse Crack",
-    "D20": "Alligator Crack",
-    "D40": "Pothole",
-    "OTHER": "Other Corruption"
-}
+CLASS_LABELS = config.CLASS_NAMES
 
-# Standardized Severity Classification Boundaries
+# Severity Classification Boundaries
 SEVERITY_THRESHOLDS = {
     "CRITICAL": 80.0,
     "HIGH": 60.0,
@@ -82,30 +82,53 @@ def estimate_severity(
     frame_dimensions: tuple (width, height)
         Dimensions of the video or image frame in pixels.
     context: dict, optional
-        Additional contextual indicators (e.g. 'track_hits': int).
+        Additional contextual indicators:
+        - 'track_hits': int (number of frames observed)
+        - 'is_video': bool (indicates video stream context)
 
     Returns:
     --------
     dict containing:
-        - severity_score: float (0.0 to 100.0)
-        - severity_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL'
+        - raw_severity_score: float (pure spatial visual score, 5.0 - 100.0)
+        - raw_severity_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL'
+        - adjusted_severity_score: float (temporally adjusted score, 5.0 - 100.0)
+        - adjusted_severity_level: 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL'
+        - severity_score: float (alias for adjusted_severity_score)
+        - severity_level: str (alias for adjusted_severity_level)
+        - persistence_adjustment: float (-2.0, 0.0, or +3.0)
         - reason: str (human-readable justification)
-        - contributing_factors: dict (detailed breakdown of scoring components)
+        - contributing_factors: dict (breakdown of scoring components)
     """
-    frame_w, frame_h = frame_dimensions
-    frame_w = max(1, frame_w)
-    frame_h = max(1, frame_h)
+    # Defensive frame dimension handling
+    raw_w, raw_h = frame_dimensions if frame_dimensions and len(frame_dimensions) == 2 else (640, 640)
+    frame_w = max(1.0, float(raw_w))
+    frame_h = max(1.0, float(raw_h))
     frame_area = frame_w * frame_h
 
-    # Extract bounding box coordinates
-    box = detection.get("box", [0, 0, 0, 0])
-    x1, y1, x2, y2 = box
-    box_w = max(1.0, float(x2 - x1))
-    box_h = max(1.0, float(y2 - y1))
+    # Extract and defensively clamp bounding box coordinates
+    raw_box = detection.get("box", [0, 0, 0, 0])
+    if len(raw_box) != 4:
+        raw_box = [0, 0, 0, 0]
+
+    rx1, ry1, rx2, ry2 = raw_box
+    # Handle inverted or negative coordinates
+    xmin = min(rx1, rx2)
+    xmax = max(rx1, rx2)
+    ymin = min(ry1, ry2)
+    ymax = max(ry1, ry2)
+
+    # Clamp strictly within image boundaries
+    x1 = max(0.0, min(frame_w, float(xmin)))
+    x2 = max(0.0, min(frame_w, float(xmax)))
+    y1 = max(0.0, min(frame_h, float(ymin)))
+    y2 = max(0.0, min(frame_h, float(ymax)))
+
+    box_w = max(1.0, x2 - x1)
+    box_h = max(1.0, y2 - y1)
     box_area = box_w * box_h
 
     # Extract class code & confidence
-    class_code = detection.get("class_code", "OTHER").upper()
+    class_code = str(detection.get("class_code", "OTHER")).upper().strip()
     confidence = float(detection.get("confidence", 0.0))
 
     # 1. CATEGORY HAZARD COMPONENT (0 to 35 pts)
@@ -125,11 +148,9 @@ def estimate_severity(
         area_score = max(1.0, (area_ratio / 0.2) * 5.0)
 
     # 3. PERSPECTIVE ROAD PROXIMITY COMPONENT (0 to 20 pts)
-    # y near frame_h indicates immediate vehicle path (near-field)
+    # y near frame_h indicates near-field roadway directly in front of vehicle wheels
     y_center = (y1 + y2) / 2.0
     norm_y = min(1.0, max(0.0, y_center / frame_h))
-    
-    # Quadratic proximity weighting favoring lower road half
     proximity_factor = math.pow(norm_y, 2.0)
     proximity_score = 20.0 * proximity_factor
 
@@ -154,37 +175,54 @@ def estimate_severity(
     else:
         geometry_score = 4.0
 
-    # Composite Score
-    raw_score = category_base + area_score + proximity_score + geometry_score
+    # Raw Spatial Score (Pure visual observation without temporal context)
+    raw_composite = category_base + area_score + proximity_score + geometry_score
+    raw_score = min(100.0, max(5.0, raw_composite))
+    raw_level = classify_severity_score(raw_score)
 
-    # 5. TEMPORAL VIDEO PERSISTENCE ADJUSTMENT (when available)
+    # 5. TEMPORAL PERSISTENCE MODIFIER (Delta_pers)
     persistence_adjustment = 0.0
     track_hits = 0
-    if context and "track_hits" in context:
-        track_hits = int(context["track_hits"])
-        if track_hits >= 5:
-            persistence_adjustment = 3.0
-        elif track_hits == 1:
-            persistence_adjustment = -2.0
+    is_video = False
+
+    if context:
+        is_video = context.get("is_video", False)
+        if "track_hits" in context:
+            track_hits = int(context["track_hits"])
+            if track_hits >= config.PERSISTENCE_THRESHOLD_HITS:
+                # Confirmed persistent defect across >= 5 frames
+                persistence_adjustment = config.PERSISTENCE_BONUS  # +3.0 pts
+            elif track_hits == 1 and is_video:
+                # 1-frame transient detection in video stream
+                persistence_adjustment = config.TRANSIENT_DISCOUNT  # -2.0 pts
 
     final_score = min(100.0, max(5.0, raw_score + persistence_adjustment))
-    severity_level = classify_severity_score(final_score)
+    final_level = classify_severity_score(final_score)
 
-    # Human-readable justification
-    class_label = CLASS_LABELS.get(class_code, "Road Defect")
+    # Formulate clear justification
+    class_name = config.CLASS_NAMES.get(
+        config.CLASS_ALIAS_MAP.get(class_code.lower(), 4),
+        "Road Defect"
+    )
     reason_parts = [
-        f"{class_label} ({class_code}) baseline risk of {category_base:.0f} pts",
+        f"{class_name} ({class_code}) baseline risk of {category_base:.0f} pts",
         f"relative visible area {area_ratio:.2f}% ({area_score:.1f} pts)",
         f"lane proximity index {norm_y:.2f} ({proximity_score:.1f} pts)",
         f"aspect ratio {aspect_ratio:.2f} ({geometry_score:.1f} pts)"
     ]
     if persistence_adjustment != 0.0:
-        reason_parts.append(f"temporal persistence ({persistence_adjustment:+.1f} pts)")
-    reason = f"Classified as {severity_level} (Score {final_score:.1f}/100) based on: " + "; ".join(reason_parts) + "."
+        reason_parts.append(f"temporal persistence modifier ({persistence_adjustment:+.1f} pts)")
+
+    reason = f"Classified as {final_level} (Score {final_score:.1f}/100) based on: " + "; ".join(reason_parts) + "."
 
     return {
+        "raw_severity_score": round(raw_score, 1),
+        "raw_severity_level": raw_level,
+        "adjusted_severity_score": round(final_score, 1),
+        "adjusted_severity_level": final_level,
         "severity_score": round(final_score, 1),
-        "severity_level": severity_level,
+        "severity_level": final_level,
+        "persistence_adjustment": round(persistence_adjustment, 1),
         "reason": reason,
         "contributing_factors": {
             "class_code": class_code,
@@ -197,6 +235,7 @@ def estimate_severity(
             "geometry_score_pts": round(geometry_score, 1),
             "persistence_adjustment_pts": round(persistence_adjustment, 1),
             "detection_confidence": round(confidence, 3),
-            "track_hits": track_hits
+            "track_hits": track_hits,
+            "is_video": is_video
         }
     }

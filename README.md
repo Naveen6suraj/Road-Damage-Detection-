@@ -3,15 +3,15 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![PyTorch 2.6 CUDA](https://img.shields.io/badge/PyTorch-2.6%20CUDA-green.svg)](https://pytorch.org/)
 [![YOLO11 Nano](https://img.shields.io/badge/Model-YOLO11%20Nano-cyan.svg)](https://docs.ultralytics.com/)
-[![Tests Passed](https://img.shields.io/badge/Tests-28%2F28%20Passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests Passed](https://img.shields.io/badge/Tests-35%2F35%20Passed-brightgreen.svg)](docs/TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An industrial-grade, academically rigorous computer vision and roadway condition assessment application. ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports.
+An industrial-grade, academically rigorous computer vision and roadway condition assessment application (v2.1.0 Hardened Academic Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports.
 
 ---
 
 ## 1. Project Title
-**ROADGUARD AI: Pothole & Road-Crack Severity Estimator from Dashcam Video**  
+**ROADGUARD AI (v2.1.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
 *Subtitle: Intelligent Road Damage Detection & Severity Assessment System*
 
 ---
@@ -57,15 +57,16 @@ The prior repository codebase suffered from several technical and architectural 
 
 ---
 
-## 7. Proposed System
+## 7. Proposed System (v2.1.0 Hardened Release)
 ROADGUARD AI transforms the repository into a complete, professional AI engineering application:
-- Modular architecture with clean Flask Blueprints and SQLite database persistence.
-- Automatic hardware detection and graceful missing-weights fallback.
-- `RoadDefectTracker` implementing IoU and centroid association.
-- `core/severity_engine.py` calculating empirical visual risk indices with transparent rationales.
+- Modular architecture with clean Flask Blueprints and SQLite database persistence (`roadguard.db`, `roadguard_demo.db`).
+- Strict model validation guard rejecting generic COCO weights to prevent false road distress reports.
+- Automatic hardware detection with GPU acceleration (RTX 3050 CUDA 12.4).
+- `RoadDefectTracker` implementing IoU and centroid association with Confirmed vs Transient separation and class-matching integrity.
+- `core/severity_engine.py` calculating empirical visual risk indices with transparent rationales, temporal persistence bonus (+3.0 pts), and transient discount (-2.0 pts).
 - Asynchronous video processing with real-time polling progress feedback (FPS, frame count, elapsed time).
-- Executive ReportLab PDF generation and CSV export.
-- 28 automated tests covering all modules with 100% pass rate.
+- Executive ReportLab PDF generation and CSV export displaying Status and Raw/Adjusted severity.
+- 35 automated tests covering all modules with 100% pass rate.
 
 ---
 
@@ -257,9 +258,9 @@ python evaluate.py --eval-severity-only
 ## 21. Evaluation Results (Genuinely Measured)
 
 ### Automated Test Suite:
-- **Total Tests Executed**: 28
-- **Tests Passed**: 28 (100% Pass Rate)
-- **Execution Time**: 9.80 seconds on NVIDIA RTX 3050 Laptop GPU
+- **Total Tests Executed**: 35
+- **Tests Passed**: 35 (100% Pass Rate)
+- **Execution Time**: 8.63 seconds on NVIDIA RTX 3050 Laptop GPU (CUDA 12.4, PyTorch 2.6.0+cu124)
 
 ### Severity Engine Consistency Evaluation:
 - **Massive Near-Field Pothole**: 93.1 pts -> **CRITICAL** (Expected: CRITICAL) [PASS]

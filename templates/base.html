@@ -27,7 +27,6 @@
                 <a href="/analysis" class="nav-item {% if request.path == '/analysis' %}active{% endif %}">Analysis Studio</a>
             </nav>
 
-            <div class="nav-actions">
                 <div class="status-badge" id="systemStatusBadge" title="Inference Hardware Accelerator">
                     <span class="status-dot online"></span>
                     <span class="status-text">
@@ -37,6 +36,15 @@
                             CPU Accelerated
                         {% endif %}
                     </span>
+                </div>
+                <div class="status-badge" id="modelStatusBadge" title="YOLO Road Damage Model Status">
+                    {% if sys_status and sys_status.inference_enabled %}
+                        <span class="status-dot online"></span>
+                        <span class="status-text">Model: Ready</span>
+                    {% else %}
+                        <span class="status-dot offline" style="background: #f59e0b;"></span>
+                        <span class="status-text" style="color: #fbbf24;">Model: Awaiting best.pt</span>
+                    {% endif %}
                 </div>
                 <a href="/analysis" class="btn btn-primary btn-sm">+ New Analysis</a>
             </div>
@@ -52,7 +60,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-left">
-                <p class="footer-title">ROADGUARD AI &bull; Version 2.0.0</p>
+                <p class="footer-title">ROADGUARD AI &bull; Version 2.1.0</p>
                 <p class="footer-sub">Deep Learning Pothole & Crack Severity Assessment System</p>
             </div>
             <div class="footer-right">

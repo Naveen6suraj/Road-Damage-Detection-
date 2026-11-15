@@ -10,6 +10,23 @@
     </div>
 </div>
 
+{% if sys_status and not sys_status.inference_enabled %}
+<div class="model-warning-banner" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 1rem;">
+    <div style="font-size: 1.75rem; line-height: 1;">⚠️</div>
+    <div>
+        <h4 style="color: #fbbf24; font-size: 1rem; font-weight: 700; margin-bottom: 0.35rem;">
+            Custom Road Damage Detection Model Offline
+        </h4>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4; margin-bottom: 0.5rem;">
+            ROADGUARD AI v2.1.0 strictly enforces road-damage class validation (D00, D10, D20, D40) and refuses to run inference using generic COCO pretrained weights to prevent false road distress reports. No valid custom model was located at <code>models/best.pt</code>.
+        </p>
+        <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">
+            <strong>To enable live inference:</strong> Train a model with <code>python train.py --data dataset/RDD2020/data.yaml</code> or place a trained weights file in <code>models/best.pt</code>. You can inspect pre-computed analyses on the <a href="/dashboard" style="color: var(--accent-cyan); text-decoration: underline;">Dashboard</a>.
+        </p>
+    </div>
+</div>
+{% endif %}
+
 <!-- Studio Mode Selector Tabs -->
 <div class="tabs-container">
     <button class="tab-btn active" id="tabBtnImage" onclick="switchStudioTab('image')">📸 Road Image Analysis</button>
@@ -45,7 +62,7 @@
                     <input type="range" id="imgConfSlider" min="10" max="90" value="25" class="slider-input" oninput="document.getElementById('imgConfDisplay').innerText = this.value + '%'">
                 </div>
 
-                <button id="btnAnalyzeImage" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeImageAnalysis()">
+                <button id="btnAnalyzeImage" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeImageAnalysis()" {% if sys_status and not sys_status.inference_enabled %}disabled title="Trained road damage weights ('best.pt') required to enable inference"{% endif %}>
                     🔍 Run Detection & Severity Assessment
                 </button>
 
@@ -150,7 +167,7 @@
                     <input type="range" id="vidConfSlider" min="10" max="90" value="25" class="slider-input" oninput="document.getElementById('vidConfDisplay').innerText = this.value + '%'">
                 </div>
 
-                <button id="btnAnalyzeVideo" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeVideoAnalysis()">
+                <button id="btnAnalyzeVideo" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeVideoAnalysis()" {% if sys_status and not sys_status.inference_enabled %}disabled title="Trained road damage weights ('best.pt') required to enable inference"{% endif %}>
                     🚀 Process Dashcam Video & Track Defects
                 </button>
 
@@ -255,7 +272,7 @@
         </div>
 
         <div class="webcam-controls">
-            <button id="btnStartCamera" class="btn btn-primary" onclick="startWebcamStream()">📹 Start Live Camera</button>
+            <button id="btnStartCamera" class="btn btn-primary" onclick="startWebcamStream()" {% if sys_status and not sys_status.inference_enabled %}disabled title="Trained road damage weights ('best.pt') required to enable inference"{% endif %}>📹 Start Live Camera</button>
             <button id="btnStopCamera" class="btn btn-danger hidden" onclick="stopWebcamStream()">⏹ Stop Camera</button>
         </div>
 

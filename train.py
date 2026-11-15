@@ -34,6 +34,8 @@ def validate_dataset(data_yaml_path: str) -> bool:
     val_rel = cfg.get("val", "")
 
     train_dir = os.path.join(base_path, train_rel) if not os.path.isabs(train_rel) else train_rel
+    val_dir = os.path.join(base_path, val_rel) if not os.path.isabs(val_rel) else val_rel
+
     if not os.path.exists(train_dir):
         print(f"[!] Training images directory not found: {train_dir}")
         print("    Please run 'convert_xml_to_yolo.py' after placing raw data in 'Data/'.")
@@ -45,7 +47,12 @@ def validate_dataset(data_yaml_path: str) -> bool:
         print(f"[!] No training images found in: {train_dir}")
         return False
 
-    print(f"[+] Dataset validation passed: Found {len(img_files)} training images in {train_dir}.")
+    if not os.path.exists(val_dir) or len([f for f in os.listdir(val_dir) if f.lower().endswith((".jpg", ".png", ".jpeg"))]) == 0:
+        print(f"[!] Validation images directory missing or empty at: {val_dir}")
+        print("    Run 'python convert_xml_to_yolo.py --val-split 0.2' to create train and validation splits.")
+        return False
+
+    print(f"[+] Dataset validation passed: Found {len(img_files)} train images in {train_dir}.")
     return True
 
 
