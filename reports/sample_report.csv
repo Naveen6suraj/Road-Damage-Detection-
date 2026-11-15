@@ -1,0 +1,2 @@
+Analysis_ID,Created_At,Media_Type,File_Name,Defect_Number,Track_ID,Class_Code,Class_Name,Confidence_Percent,Severity_Score,Severity_Level,Frame_Index,Timestamp_Sec,BBox_X1,BBox_Y1,BBox_X2,BBox_Y2,Assessment_Reason
+DEMO-001,2026-11-15T12:00:00,video,sample_dashcam.mp4,0,N/A,NONE,No Defects Detected,0.0,0.0,NONE,N/A,N/A,0,0,0,0,No road damage detected above confidence threshold.

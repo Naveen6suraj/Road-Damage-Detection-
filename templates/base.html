@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ROADGUARD AI | Pothole & Road Crack Severity Estimator{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js CDN for interactive visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="dark-theme">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/" class="brand-link">
+                <div class="brand-icon">🛣️</div>
+                <div class="brand-text">
+                    <span class="brand-title">ROADGUARD <span class="accent-cyan">AI</span></span>
+                    <span class="brand-subtitle">Damage & Severity Assessment</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">Home</a>
+                <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a>
+                <a href="/analysis" class="nav-item {% if request.path == '/analysis' %}active{% endif %}">Analysis Studio</a>
+            </nav>
+
+            <div class="nav-actions">
+                <div class="status-badge" id="systemStatusBadge" title="Inference Hardware Accelerator">
+                    <span class="status-dot online"></span>
+                    <span class="status-text">
+                        {% if sys_status and sys_status.cuda_available %}
+                            GPU: RTX 3050 (CUDA)
+                        {% else %}
+                            CPU Accelerated
+                        {% endif %}
+                    </span>
+                </div>
+                <a href="/analysis" class="btn btn-primary btn-sm">+ New Analysis</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Professional Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <p class="footer-title">ROADGUARD AI &bull; Version 2.0.0</p>
+                <p class="footer-sub">Deep Learning Pothole & Crack Severity Assessment System</p>
+            </div>
+            <div class="footer-right">
+                <span class="footer-tag">YOLO11 Nano Engine</span>
+                <span class="footer-tag">PyTorch 2.6 CUDA</span>
+                <span class="footer-tag">Sort/IoU Tracking</span>
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

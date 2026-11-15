@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Studio | ROADGUARD AI{% endblock %}
+
+{% block content %}
+<div class="card-header" style="margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 1.75rem; font-weight: 800;">Road Defect Analysis Studio</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Upload dashcam video footage, road images, or access live webcam for real-time defect severity estimation.</p>
+    </div>
+</div>
+
+<!-- Studio Mode Selector Tabs -->
+<div class="tabs-container">
+    <button class="tab-btn active" id="tabBtnImage" onclick="switchStudioTab('image')">📸 Road Image Analysis</button>
+    <button class="tab-btn" id="tabBtnVideo" onclick="switchStudioTab('video')">🎥 Dashcam Video Analysis</button>
+    <button class="tab-btn" id="tabBtnCamera" onclick="switchStudioTab('camera')">📹 Live Camera Feed</button>
+</div>
+
+<!-- =========================================================================
+     TAB 1: ROAD IMAGE ANALYSIS
+     ========================================================================= -->
+<div id="sectionImage" class="studio-section">
+    <div class="dashboard-grid">
+        <!-- Controls Column -->
+        <div>
+            <div class="panel-card">
+                <div class="card-header">
+                    <h3 class="card-title">Upload Road Image</h3>
+                    <span class="badge badge-low">JPG, PNG, WEBP</span>
+                </div>
+
+                <div class="upload-zone" id="imageDropZone" onclick="document.getElementById('imageFileInput').click()">
+                    <div class="upload-icon">📂</div>
+                    <div class="upload-title">Click or Drag & Drop Road Image</div>
+                    <div class="upload-desc">Supports high-resolution road photos (max 50 MB)</div>
+                    <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageSelection(this.files[0])">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label-row">
+                        <span>Confidence Threshold:</span>
+                        <span id="imgConfDisplay" class="accent-cyan">25%</span>
+                    </div>
+                    <input type="range" id="imgConfSlider" min="10" max="90" value="25" class="slider-input" oninput="document.getElementById('imgConfDisplay').innerText = this.value + '%'">
+                </div>
+
+                <button id="btnAnalyzeImage" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeImageAnalysis()">
+                    🔍 Run Detection & Severity Assessment
+                </button>
+
+                <!-- Processing Loader -->
+                <div id="imageLoader" class="hidden" style="margin-top: 1rem; text-align: center; color: var(--accent-cyan); font-weight: 600;">
+                    ⏳ Running YOLO11 inference & severity assessment...
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Column -->
+        <div>
+            <div class="panel-card">
+                <div class="card-header">
+                    <h3 class="card-title">Inspection Results & HUD</h3>
+                    <div id="imageActions" class="hidden" style="display: flex; gap: 0.5rem;">
+                        <a id="btnDownloadImagePdf" href="#" class="btn btn-secondary btn-sm">PDF Report</a>
+                        <a id="btnDownloadImageCsv" href="#" class="btn btn-secondary btn-sm">CSV Data</a>
+                    </div>
+                </div>
+
+                <!-- Media Preview / Output Display -->
+                <div class="preview-box" id="imagePreviewContainer">
+                    <div style="color: var(--text-muted); text-align: center; padding: 3rem;">
+                        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🖼️</span>
+                        Annotated output will be rendered here.
+                    </div>
+                </div>
+
+                <!-- Detection Summary Counters -->
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-top: 1rem;">
+                    <div style="background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">D00 Long.</div>
+                        <div id="imgCountD00" style="font-weight: 800; font-size: 1.1rem; color: #3b82f6;">0</div>
+                    </div>
+                    <div style="background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">D10 Trans.</div>
+                        <div id="imgCountD10" style="font-weight: 800; font-size: 1.1rem; color: #06b6d4;">0</div>
+                    </div>
+                    <div style="background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">D20 Allig.</div>
+                        <div id="imgCountD20" style="font-weight: 800; font-size: 1.1rem; color: #f97316;">0</div>
+                    </div>
+                    <div style="background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">D40 Pothole</div>
+                        <div id="imgCountD40" style="font-weight: 800; font-size: 1.1rem; color: #ef4444;">0</div>
+                    </div>
+                    <div style="background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">OTHER</div>
+                        <div id="imgCountOTHER" style="font-weight: 800; font-size: 1.1rem; color: #8b5cf6;">0</div>
+                    </div>
+                </div>
+
+                <!-- Defect Registry Table -->
+                <div id="imageDefectsTableContainer" class="hidden" style="margin-top: 1.25rem;">
+                    <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Defect Registry:</h4>
+                    <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                        <table class="custom-table" id="imageDefectsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Class</th>
+                                    <th>Conf</th>
+                                    <th>Severity</th>
+                                    <th>Assessment Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     TAB 2: DASHCAM VIDEO ANALYSIS
+     ========================================================================= -->
+<div id="sectionVideo" class="studio-section hidden">
+    <div class="dashboard-grid">
+        <!-- Controls Column -->
+        <div>
+            <div class="panel-card">
+                <div class="card-header">
+                    <h3 class="card-title">Upload Dashcam Video</h3>
+                    <span class="badge badge-low">MP4, AVI, MOV</span>
+                </div>
+
+                <div class="upload-zone" id="videoDropZone" onclick="document.getElementById('videoFileInput').click()">
+                    <div class="upload-icon">🎥</div>
+                    <div class="upload-title">Click or Drag & Drop Dashcam Video</div>
+                    <div class="upload-desc">Supports MP4, AVI, MOV up to 150 MB</div>
+                    <input type="file" id="videoFileInput" accept="video/*" class="hidden" onchange="handleVideoSelection(this.files[0])">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label-row">
+                        <span>Confidence Threshold:</span>
+                        <span id="vidConfDisplay" class="accent-cyan">25%</span>
+                    </div>
+                    <input type="range" id="vidConfSlider" min="10" max="90" value="25" class="slider-input" oninput="document.getElementById('vidConfDisplay').innerText = this.value + '%'">
+                </div>
+
+                <button id="btnAnalyzeVideo" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="executeVideoAnalysis()">
+                    🚀 Process Dashcam Video & Track Defects
+                </button>
+
+                <!-- Video Processing Progress Box -->
+                <div id="videoProgressContainer" class="progress-container hidden" style="margin-top: 1.25rem;">
+                    <div class="progress-header">
+                        <span id="videoProgressLabel">Processing Video Frames...</span>
+                        <span id="videoProgressPercent" class="accent-cyan">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="videoProgressBar" class="progress-fill"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                        <span id="videoProgressStats">Frame 0 / 0</span>
+                        <span id="videoProgressFps">0.0 FPS</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Output Column -->
+        <div>
+            <div class="panel-card">
+                <div class="card-header">
+                    <h3 class="card-title">Annotated Video Playback & Tracking</h3>
+                    <div id="videoActions" class="hidden" style="display: flex; gap: 0.5rem;">
+                        <a id="btnDownloadAnnotatedVideo" href="#" class="btn btn-primary btn-sm" download>Download Video</a>
+                        <a id="btnDownloadVideoPdf" href="#" class="btn btn-secondary btn-sm">PDF Report</a>
+                        <a id="btnDownloadVideoCsv" href="#" class="btn btn-secondary btn-sm">CSV Data</a>
+                    </div>
+                </div>
+
+                <div class="preview-box" id="videoPreviewContainer">
+                    <div style="color: var(--text-muted); text-align: center; padding: 3rem;">
+                        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🎬</span>
+                        Processed video with object tracking overlays will play here.
+                    </div>
+                </div>
+
+                <!-- Tracking Statistics Summary Grid -->
+                <div id="videoTrackingStatsBox" class="hidden" style="margin-top: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+                        <div class="stat-card" style="padding: 0.75rem;">
+                            <span class="stat-title">Unique Defects</span>
+                            <div class="stat-value" id="vidStatUnique" style="font-size: 1.5rem;">0</div>
+                            <span class="stat-footer">Deduplicated across frames</span>
+                        </div>
+                        <div class="stat-card" style="padding: 0.75rem;">
+                            <span class="stat-title">Peak Severity</span>
+                            <div class="stat-value" id="vidStatPeakSev" style="font-size: 1.5rem; color: var(--sev-high);">LOW</div>
+                            <span class="stat-footer" id="vidStatPeakScore">Score: 0.0</span>
+                        </div>
+                        <div class="stat-card" style="padding: 0.75rem;">
+                            <span class="stat-title">Total Detections</span>
+                            <div class="stat-value" id="vidStatFrameDets" style="font-size: 1.5rem;">0</div>
+                            <span class="stat-footer">Frame-level observations</span>
+                        </div>
+                    </div>
+
+                    <!-- Unique Tracked Defects Registry -->
+                    <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Unique Tracked Defect Registry:</h4>
+                    <div class="table-responsive" style="max-height: 240px; overflow-y: auto;">
+                        <table class="custom-table" id="videoDefectsTable">
+                            <thead>
+                                <tr>
+                                    <th>Track ID</th>
+                                    <th>Category</th>
+                                    <th>Peak Conf</th>
+                                    <th>Severity</th>
+                                    <th>Frames Tracked</th>
+                                    <th>Assessment Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     TAB 3: LIVE CAMERA FEED
+     ========================================================================= -->
+<div id="sectionCamera" class="studio-section hidden">
+    <div class="panel-card" style="max-width: 900px; margin: 0 auto;">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Live Road Inspection Camera</h3>
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">Direct browser camera access with frame-by-frame backend YOLO inference.</p>
+            </div>
+            <div class="status-badge" id="cameraStatusBadge">
+                <span class="status-dot" id="cameraStatusDot" style="background: var(--text-muted);"></span>
+                <span id="cameraStatusText">Camera Inactive</span>
+            </div>
+        </div>
+
+        <div class="webcam-container">
+            <video id="liveWebcamVideo" autoplay playsinline muted style="width: 100%; border-radius: var(--radius-md);"></video>
+            <canvas id="liveWebcamCanvas" class="hidden" style="width: 100%; border-radius: var(--radius-md);"></canvas>
+        </div>
+
+        <div class="webcam-controls">
+            <button id="btnStartCamera" class="btn btn-primary" onclick="startWebcamStream()">📹 Start Live Camera</button>
+            <button id="btnStopCamera" class="btn btn-danger hidden" onclick="stopWebcamStream()">⏹ Stop Camera</button>
+        </div>
+
+        <!-- Live Camera HUD Status -->
+        <div id="cameraStatsBar" class="hidden" style="margin-top: 1.25rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;">
+            <div style="background: var(--bg-elevated); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Active Defects</div>
+                <div id="camActiveCount" style="font-size: 1.25rem; font-weight: 800; color: var(--accent-cyan);">0</div>
+            </div>
+            <div style="background: var(--bg-elevated); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Highest Severity</div>
+                <div id="camHighestSev" style="font-size: 1.25rem; font-weight: 800; color: var(--sev-low);">LOW</div>
+            </div>
+            <div style="background: var(--bg-elevated); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Inference Latency</div>
+                <div id="camLatency" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">0 ms</div>
+            </div>
+            <div style="background: var(--bg-elevated); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Stream FPS</div>
+                <div id="camFps" style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">0.0</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Inspection Results | {{ analysis.id }} | ROADGUARD AI{% endblock %}
+
+{% block content %}
+<div class="card-header" style="margin-bottom: 2rem;">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+            <h1 style="font-size: 1.75rem; font-weight: 800;">Inspection Report: {{ analysis.id }}</h1>
+            <span class="badge" style="background: var(--bg-elevated); color: var(--accent-cyan); border: 1px solid var(--border-subtle);">
+                {{ analysis.media_type|upper }}
+            </span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Source: <strong>{{ analysis.filename }}</strong> &bull; Inspected: {{ analysis.created_at|datetime_format }}
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="/api/reports/download/{{ analysis.id }}/pdf" class="btn btn-primary btn-sm">📄 Download PDF Report</a>
+        <a href="/api/reports/download/{{ analysis.id }}/csv" class="btn btn-secondary btn-sm">📊 Download CSV Registry</a>
+    </div>
+</div>
+
+<!-- KPI Metric Cards -->
+<section class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Defects Identified</span>
+            <span class="stat-icon">🔍</span>
+        </div>
+        <div class="stat-value">{{ analysis.unique_defects or analysis.total_defects or 0 }}</div>
+        <div class="stat-footer">Unique defects tracked</div>
+    </div>
+
+    <div class="stat-card {% if analysis.max_severity_level == 'CRITICAL' %}critical{% elif analysis.max_severity_level == 'HIGH' %}high{% elif analysis.max_severity_level == 'MODERATE' %}moderate{% else %}low{% endif %}">
+        <div class="stat-header">
+            <span class="stat-title">Peak Severity Risk</span>
+            <span class="stat-icon">⚠️</span>
+        </div>
+        <div class="stat-value" style="color: {% if analysis.max_severity_level == 'CRITICAL' %}var(--sev-critical){% elif analysis.max_severity_level == 'HIGH' %}var(--sev-high){% elif analysis.max_severity_level == 'MODERATE' %}var(--sev-moderate){% else %}var(--sev-low){% endif %};">
+            {{ analysis.max_severity_level }}
+        </div>
+        <div class="stat-footer">Visual Score: {{ "%.1f"|format(analysis.max_severity_score or 0.0) }} / 100</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Average Confidence</span>
+            <span class="stat-icon">🎯</span>
+        </div>
+        <div class="stat-value">{{ "%.1f"|format((analysis.avg_confidence or 0.0) * 100) }}%</div>
+        <div class="stat-footer">Model classification certainty</div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Processing Duration</span>
+            <span class="stat-icon">⏱️</span>
+        </div>
+        <div class="stat-value">{{ "%.2f"|format(analysis.processing_time_sec or 0.0) }}s</div>
+        <div class="stat-footer">Hardware inference time</div>
+    </div>
+</section>
+
+<!-- Media Viewer & Distribution Grid -->
+<div class="dashboard-grid">
+    <!-- Annotated Media Player / Viewer -->
+    <div class="panel-card">
+        <div class="card-header">
+            <h3 class="card-title">Annotated Media Inspection</h3>
+            {% if analysis.output_path %}
+            <a href="{{ analysis.output_path }}" class="btn btn-secondary btn-sm" download>Save Media</a>
+            {% endif %}
+        </div>
+
+        <div class="preview-box">
+            {% if analysis.media_type == 'video' %}
+            <video src="{{ analysis.output_path }}" controls autoplay style="width: 100%; border-radius: var(--radius-md);"></video>
+            {% else %}
+            <img src="{{ analysis.output_path }}" alt="Annotated Road Damage" style="width: 100%; border-radius: var(--radius-md);">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Severity & Class Distribution Summary -->
+    <div class="panel-card">
+        <div class="card-header">
+            <h3 class="card-title">Inspection Summary Breakdown</h3>
+        </div>
+
+        <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Severity Distribution:</h4>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-critical);">
+                <span>CRITICAL</span>
+                <strong style="color: var(--sev-critical);">{{ analysis.critical_count or 0 }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-high);">
+                <span>HIGH</span>
+                <strong style="color: var(--sev-high);">{{ analysis.high_count or 0 }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-moderate);">
+                <span>MODERATE</span>
+                <strong style="color: var(--sev-moderate);">{{ analysis.moderate_count or 0 }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-low);">
+                <span>LOW</span>
+                <strong style="color: var(--sev-low);">{{ analysis.low_count or 0 }}</strong>
+            </div>
+        </div>
+
+        <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Methodology Disclaimer:</h4>
+        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+            Severity levels are empirical visual risk estimates computed from 2D visible damaged area, category hazard, lane perspective proximity, and temporal persistence. Physical defect depth in millimeters requires calibrated 3D stereo geometry or LiDAR profiling.
+        </p>
+    </div>
+</div>
+
+<!-- Detailed Defect Table -->
+<section class="panel-card" style="margin-top: 1.5rem;">
+    <div class="card-header">
+        <h3 class="card-title">Defect Registry & Assessment Rationale</h3>
+        <span class="badge badge-low">{{ detections|length }} Detections</span>
+    </div>
+
+    <div class="table-responsive">
+        {% if detections and detections|length > 0 %}
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Track ID</th>
+                    <th>Category</th>
+                    <th>Confidence</th>
+                    <th>Severity Level</th>
+                    <th>Severity Score</th>
+                    <th>Assessment Justification</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in detections %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ d.track_id or '-' }}</strong></td>
+                    <td>
+                        <span class="badge" style="background: var(--bg-elevated); color: var(--text-primary);">
+                            {{ d.class_name }} ({{ d.class_code }})
+                        </span>
+                    </td>
+                    <td>{{ "%.1f"|format(d.confidence * 100) }}%</td>
+                    <td>
+                        {% if d.severity_level == 'CRITICAL' %}
+                            <span class="badge badge-critical">CRITICAL</span>
+                        {% elif d.severity_level == 'HIGH' %}
+                            <span class="badge badge-high">HIGH</span>
+                        {% elif d.severity_level == 'MODERATE' %}
+                            <span class="badge badge-moderate">MODERATE</span>
+                        {% else %}
+                            <span class="badge badge-low">LOW</span>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ "%.1f"|format(d.severity_score) }}</strong> / 100</td>
+                    <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ d.reason }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No defects identified in this media record.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
