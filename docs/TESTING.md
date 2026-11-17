@@ -1,21 +1,22 @@
 # ROADGUARD AI: Quality Assurance & Testing Protocol
-Version: 3.1.0 (Advanced AI/ML & Engineering Excellence Release)
+Version: 3.2.0 (Custom Model Acquisition, Training & Validation Release)
 
 ## 1. Automated Test Suite Overview
 
 ROADGUARD AI includes a comprehensive, multi-layer automated test suite implemented with `pytest`. The test suite validates core AI/ML inference, dataset integrity, Explainable AI (XAI) feature decomposition, hardware performance benchmarking, spatial-temporal multi-object tracking, video decoding/encoding pipelines, executive PDF and CSV report compilation, and RESTful API route endpoints.
 
-### Summary of Executed Test Suites (10 Modules, 57 Tests):
-1. **`tests/test_dataset_validator.py`**: Directory structure validation, YAML parsing, road damage taxonomy verification, bounding box bounds check ($[0.0, 1.0]$), missing label detection, and cross-split SHA-256 data leakage prevention.
-2. **`tests/test_xai_severity.py`**: Explainable AI feature decomposition ($W_{cat} + W_{area} + W_{pos} + W_{geom} + \Delta_{pers}$), geometric aspect ratio penalty (crack elongation vs. pothole compactness), temporal persistence bonus (+3.0 pts), and transient discount (-2.0 pts).
-3. **`tests/test_benchmark.py`**: Host telemetry extraction, runtime benchmark JSON schema conformance (`reports/hardware_benchmark.json`), CSV report verification, and Flask `/api/benchmark/status` endpoint testing.
-4. **`tests/test_model_metadata.py`**: Academic audit schema validation for `models/model_metadata.json`, taxonomy code verification, and runtime metadata export utility.
-5. **`tests/test_severity.py`**: Severity scoring logic, boundary values, category hazard base points, perspective proximity, out-of-bounds/inverted bounding box clamping, and raw vs adjusted score distinction.
-6. **`tests/test_tracker.py`**: Bounding box IoU calculation, forward camera motion compensation, spatial track association across consecutive frames, track identity persistence, multi-frame deduplication, transient vs confirmed classification, and class-consistent tracking.
-7. **`tests/test_detector.py`**: Detector initialization, hardware accelerator reporting (RTX GPU CUDA vs CPU), strict custom model validation (rejection of generic COCO, rejection of partially compatible models missing required classes, rejection of incompatible mappings), class name normalization, and synthetic frame inference.
-8. **`tests/test_video.py`**: Video metadata extraction, OpenCV `VideoCapture` and `VideoWriter` resource lifecycle, frame-stride sampling, and corrupt video error handling.
-9. **`tests/test_reports.py`**: ReportLab PDF generation with Status and Raw/Adjusted severity scores, table formatting, and CSV defect registry compilation.
-10. **`tests/test_routes.py`**: Flask application factory, HTTP status codes, JSON response schemas, file size and extension validation, model availability 503 rejection, `/api/model/status` endpoint, directory traversal protection (`/outputs/../`, `/reports/../../`), safe analysis ID regex enforcement, production secret key requirement, legacy `/predict_image` route compatibility, 404 error handler, inspection history (`/history`), executive reports (`/reports`), and atomic analysis deletion (`DELETE /api/analyses/<id>`).
+### Summary of Executed Test Suites (11 Modules, 60 Tests):
+1. **`tests/test_dataset_acquisition.py`**: Official RDD2022/RDD2020 DOI validation, archive MD5 checksum validation, file manifest verification, and error handling for missing archives.
+2. **`tests/test_dataset_validator.py`**: Directory structure validation, YAML parsing, road damage taxonomy verification, bounding box bounds check ($[0.0, 1.0]$), missing label detection, and cross-split SHA-256 data leakage prevention.
+3. **`tests/test_xai_severity.py`**: Explainable AI feature decomposition ($W_{cat} + W_{area} + W_{pos} + W_{geom} + \Delta_{pers}$), geometric aspect ratio penalty (crack elongation vs. pothole compactness), temporal persistence bonus (+3.0 pts), and transient discount (-2.0 pts).
+4. **`tests/test_benchmark.py`**: Host telemetry extraction, runtime benchmark JSON schema conformance (`reports/hardware_benchmark.json`), CSV report verification, and Flask `/api/benchmark/status` endpoint testing.
+5. **`tests/test_model_metadata.py`**: Academic audit schema validation for `models/model_metadata.json`, taxonomy code verification, and runtime metadata export utility.
+6. **`tests/test_severity.py`**: Severity scoring logic, boundary values, category hazard base points, perspective proximity, out-of-bounds/inverted bounding box clamping, and raw vs adjusted score distinction.
+7. **`tests/test_tracker.py`**: Bounding box IoU calculation, forward camera motion compensation, spatial track association across consecutive frames, track identity persistence, multi-frame deduplication, transient vs confirmed classification, and class-consistent tracking.
+8. **`tests/test_detector.py`**: Detector initialization, hardware accelerator reporting (RTX GPU CUDA vs CPU), strict custom model validation (rejection of generic COCO, rejection of partially compatible models missing required classes, rejection of incompatible mappings), class name normalization, and synthetic frame inference.
+9. **`tests/test_video.py`**: Video metadata extraction, OpenCV `VideoCapture` and `VideoWriter` resource lifecycle, frame-stride sampling, and corrupt video error handling.
+10. **`tests/test_reports.py`**: ReportLab PDF generation with Status and Raw/Adjusted severity scores, table formatting, and CSV defect registry compilation.
+11. **`tests/test_routes.py`**: Flask application factory, HTTP status codes, JSON response schemas, file size and extension validation, model availability 503 rejection, `/api/model/status` endpoint, directory traversal protection (`/outputs/../`, `/reports/../../`), safe analysis ID regex enforcement, production secret key requirement, legacy `/predict_image` route compatibility, 404 error handler, inspection history (`/history`), executive reports (`/reports`), and atomic analysis deletion (`DELETE /api/analyses/<id>`).
 
 ---
 

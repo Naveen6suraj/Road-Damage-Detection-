@@ -12,7 +12,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 # Application Metadata
 APP_NAME = "ROADGUARD AI"
 APP_SUBTITLE = "FIELD INTELLIGENCE — Road Damage & Severity Platform"
-APP_VERSION = "3.1.0"
+APP_VERSION = "3.2.0"
 
 # Environment and Secret Key Security
 ENV = os.environ.get("ROADGUARD_ENV", os.environ.get("FLASK_ENV", "development")).strip().lower()

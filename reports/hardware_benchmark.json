@@ -1,6 +1,6 @@
 {
   "timestamp": "2026-11-17T16:56:03.503946+00:00",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "model_path": "C:\\Users\\navee\\.gemini\\antigravity\\scratch\\RoadGuard-AI\\models\\yolo11n.pt",
   "is_base_model": true,
   "model_status": "BASE_MODEL_BENCHMARK",

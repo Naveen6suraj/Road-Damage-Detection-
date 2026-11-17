@@ -1,6 +1,6 @@
 Metric,Value,Unit
 Timestamp (UTC),2026-11-17T16:56:03.503946+00:00,ISO8601
-App Version,3.1.0,str
+App Version,3.2.0,str
 Model Evaluated,yolo11n.pt,filename
 Model Type,Base Model,category
 Compute Device,0,device

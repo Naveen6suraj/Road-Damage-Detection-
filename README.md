@@ -3,17 +3,17 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![PyTorch 2.6 CUDA / CPU](https://img.shields.io/badge/PyTorch-2.6%20CUDA%2FCPU-green.svg)](https://pytorch.org/)
 [![YOLO11 Nano](https://img.shields.io/badge/Model-YOLO11%20Nano-cyan.svg)](https://docs.ultralytics.com/)
-[![Tests Passed](https://img.shields.io/badge/Tests-57%2F57%20Passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests Passed](https://img.shields.io/badge/Tests-60%2F60%20Passed-brightgreen.svg)](docs/TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release: v3.1.0](https://img.shields.io/badge/Release-v3.1.0%20AI%2FML%20Excellence-orange.svg)](https://github.com/Naveen6suraj/Road-Damage-Detection-)
+[![Release: v3.2.0](https://img.shields.io/badge/Release-v3.2.0%20Model%20Engineering-orange.svg)](https://github.com/Naveen6suraj/Road-Damage-Detection-)
 
-An academic and practical computer vision application for roadway condition assessment (v3.1.0 Advanced AI/ML & Engineering Excellence Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via forward-motion spatial-temporal tracking, estimate empirical visual risk severity with 5-factor Explainable AI (XAI) feature decomposition, and generate executive PDF and CSV inspection reports through an industrial UI/UX interface.
+An academic and practical computer vision application for roadway condition assessment (v3.2.0 Custom Model Acquisition, Training & Validation Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via forward-motion spatial-temporal tracking, estimate empirical visual risk severity with 5-factor Explainable AI (XAI) feature decomposition, and generate executive PDF and CSV inspection reports through an industrial UI/UX interface.
 
 ---
 
 ## 1. Project Title
-**ROADGUARD AI (v3.1.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
-*Subtitle: FIELD INTELLIGENCE — Advanced AI/ML & Engineering Excellence Upgrade*
+**ROADGUARD AI (v3.2.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
+*Subtitle: FIELD INTELLIGENCE — Custom Model Acquisition, Training & Validation Release*
 
 ---
 
@@ -121,25 +121,33 @@ For complete sequence diagrams, see [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_AR
 ---
 
 ## 10. Dataset Description and Source
-ROADGUARD AI supports the international benchmark **Road Damage Dataset (RDD2020 / RDD2022)** published by Seki Lab:
-- **D00 (Longitudinal Crack)**: Pavement fractures running parallel to the direction of travel.
-- **D10 (Transverse Crack)**: Fractures traversing across the width of the roadway.
-- **D20 (Alligator Crack)**: Interconnected fatigue cracking forming multi-sided polygonal blocks.
-- **D40 (Pothole)**: Distinct structural depressions in pavement surface.
-- **OTHER**: Surface spalling, weathering, rutting (`D43`, `D44`, `D50`).
+ROADGUARD AI supports the international benchmark **Road Damage Dataset (RDD2020 / RDD2022)** published by Seki Lab (The University of Tokyo) through the Crowdsensing-based Road Damage Detection Challenge (CRDDC):
+- **D00 (Longitudinal Crack)**: Pavement fractures running parallel to the direction of travel ($W_{\text{cat}} = 10.0$ pts).
+- **D10 (Transverse Crack)**: Fractures traversing across the width of the roadway ($W_{\text{cat}} = 16.0$ pts).
+- **D20 (Alligator Crack)**: Interconnected fatigue cracking forming multi-sided polygonal blocks ($W_{\text{cat}} = 25.0$ pts).
+- **D40 (Pothole)**: Distinct structural depressions in pavement surface ($W_{\text{cat}} = 35.0$ pts).
+- **OTHER**: Surface spalling, weathering, repair patches, and rutting (`D43`, `D44`, `D50`) ($W_{\text{cat}} = 8.0$ pts).
 
-Official Dataset Source: [CRDDC 2022 Seki Lab](https://crddc2022.sekilab.global/)
+### Official Dataset Specifications:
+- **Title**: RDD2022 - The multi-national Road Damage Dataset released through CRDDC'2022
+- **DOI**: [10.6084/m9.figshare.21431547](https://doi.org/10.6084/m9.figshare.21431547)
+- **License**: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+- **Total Images**: 47,420 images across 6 countries (Japan, India, Czech Republic, Norway, United States, China)
+- **Labeled Annotations**: 38,385 Pascal VOC XML files
+- **Archive Size**: ~12.35 GB (`RDD2022_released_through_CRDDC2022.zip`, MD5: `b62bd51d2ffcfaa76c60f234f0cc2bb3`)
+- **Alternative Mirror**: Kaggle ([khaledabdelgaber/rdd2022](https://www.kaggle.com/datasets/khaledabdelgaber/rdd2022)) or RDD2020 Mendeley Data ([DOI: 10.17632/5ty2wb6gvg.1](https://data.mendeley.com/datasets/5ty2wb6gvg/1))
 
 ---
 
-## 11. Dataset Preprocessing
+## 11. Dataset Preprocessing & Multi-Country Ingestion
 The raw dataset contains Pascal VOC XML annotations. Preprocessing is automated via `convert_xml_to_yolo.py`:
-- Parses XML `<bndbox>` coordinates `[xmin, ymin, xmax, ymax]`.
-- Normalizes coordinates relative to image width and height:
+- **Recursive Multi-Country Discovery**: Scans `Data/` recursively and detects all country splits (`China_Drone`, `China_MotorBike`, `Czech`, `India`, `Japan`, `Norway`, `United_States`) from official Figshare extractions.
+- **Bounding Box Normalization**:
   $$x_{\text{center}} = \frac{x_{\min} + x_{\max}}{2 \cdot W}, \quad y_{\text{center}} = \frac{y_{\min} + y_{\max}}{2 \cdot H}$$
   $$w = \frac{x_{\max} - x_{\min}}{W}, \quad h = \frac{y_{\max} - y_{\min}}{H}$$
-- Merges corruption classes `D43`, `D44`, and `D50` into unified class `4` (`OTHER`).
-- Partitions data into YOLO directory tree: `dataset/images/train`, `dataset/labels/train`, `dataset/images/test`.
+- **Coordinate Clamping**: Clamps coordinates strictly to $[0.0, 1.0]$, handles coordinate inversion, and filters zero-area boxes.
+- **Deterministic Validation Partitioning**: Partitions an 80/20 train/val split using a fixed random seed (`seed=42`).
+- **Data Integrity & Leakage Verification**: Verified via `python utils/dataset_validator.py` with SHA-256 cross-split duplicate checks.
 
 ---
 
@@ -265,16 +273,21 @@ Trained weights will automatically export to `models/best.pt`.
 
 ---
 
-## 20. Testing Instructions
+## 20. Testing & Dataset Acquisition Instructions
 
-Run the complete automated test suite (57 tests covering 10 modules with 100% pass rate):
+Display dataset acquisition status & verification guide:
 ```powershell
-python -m pytest tests/ -v
+python utils/dataset_acquisition.py --status
 ```
 
 Run dataset validation and data leakage detection:
 ```powershell
 python utils/dataset_validator.py --data data.yaml
+```
+
+Run the complete automated test suite (60 tests covering 11 modules with 100% pass rate):
+```powershell
+python -m pytest tests/ -v
 ```
 
 Run hardware benchmark suite:
@@ -303,10 +316,10 @@ python evaluate.py
 - **Peak GPU VRAM Allocated**: **231.6 MB** (Peak Reserved: **312.0 MB**)
 - **Process Memory Footprint**: **1,143.7 MB** (RSS)
 
-### Automated Test Suite (10 Modules):
-- **Total Tests Executed**: 57
-- **Tests Passed**: 57 (100% Pass Rate)
-- **Execution Time**: ~14.3 seconds on Python 3.12.10
+### Automated Test Suite (11 Modules):
+- **Total Tests Executed**: 60
+- **Tests Passed**: 60 (100% Pass Rate)
+- **Execution Time**: ~6.0 seconds on Python 3.12.10
 
 ### Severity Engine & Explainable AI (XAI) Consistency Evaluation:
 *Source: `reports/model_evaluation.csv` and `reports/model_evaluation.pdf`*
@@ -318,7 +331,7 @@ python evaluate.py
 - **Rule Consistency & Decomposition**: 5/5 Passed (100%)
 
 ### Custom Road-Damage Model Status:
-- **Weights File (`models/best.pt`)**: Status: `BLOCKED BY MISSING RESOURCE`. Raw RDD2022 dataset images are not included in the repository. Generic COCO pretrained weights (`models/yolo11n.pt`) are strictly preserved as a transfer-learning base backbone and are prevented from running live road distress inference to uphold academic rigor. Training is fully reproducible with `python train.py`.
+- **Weights File (`models/best.pt`)**: Status: `BLOCKED BY MISSING RESOURCE`. Raw RDD2022 dataset images are not included in the repository. Figshare direct automated download is protected by AWS WAF (`x-amzn-waf-action: challenge`), requiring manual browser download. Generic COCO pretrained weights (`models/yolo11n.pt`) are strictly preserved as a transfer-learning base backbone and are prevented from running live road distress inference to uphold academic rigor. Training is fully reproducible with `python train.py`.
 
 ---
 

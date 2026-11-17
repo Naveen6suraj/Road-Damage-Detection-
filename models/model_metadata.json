@@ -2,7 +2,7 @@
   "model_name": "models/best.pt",
   "base_model": "models/yolo11n.pt",
   "architecture": "YOLO11n (Ultralytics)",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "status": "BLOCKED_BY_MISSING_RESOURCE",
   "required_codes": [
     "D00",
@@ -10,7 +10,7 @@
     "D20",
     "D40"
   ],
-  "status_description": "Custom road-damage weights (models/best.pt) require training on RDD2022 or equivalent annotated road defect dataset. Generic COCO models are strictly rejected to avoid false detections.",
+  "status_description": "Custom road-damage weights (models/best.pt) require training on RDD2022 or equivalent annotated road defect dataset. Generic COCO models are strictly rejected to avoid false detections. Automated download is blocked by Figshare AWS WAF challenge; user manual download instructions available in utils/dataset_acquisition.py.",
   "dataset_specification": {
     "name": "RDD2022 (Road Damage Dataset 2022)",
     "annotation_format": "YOLO Normalized Bounding Boxes [class_id, x_center, y_center, width, height]",
