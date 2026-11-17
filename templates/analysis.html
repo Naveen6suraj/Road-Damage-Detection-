@@ -19,16 +19,16 @@
         <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
     </div>
     <div style="flex: 1;">
-        <h4 style="color: var(--accent-primary); font-size: 0.98rem; margin-bottom: 0.25rem;">
-            CUSTOM ROAD-DAMAGE MODEL NOT INSTALLED
+        <h4 style="color: var(--accent-orange); font-size: 0.98rem; margin-bottom: 0.25rem;">
+            MODEL OFFLINE &bull; CUSTOM ROAD-DAMAGE MODEL NOT INSTALLED
         </h4>
         <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
-            ROADGUARD AI v3.0 enforces full road damage taxonomy verification (D00, D10, D20, D40) and strictly refuses inference on generic COCO weights to prevent false road distress reports.
-            Train custom weights with <code>python train.py</code> or place weights in <code>models/best.pt</code> to unlock live detection.
+            Your image is ready for inspection, but the custom road-damage model is not installed. Add a compatible <code>models/best.pt</code> checkpoint to enable real road-damage detection.
+            ROADGUARD AI strictly refuses inference on generic COCO weights to prevent false distress reports.
         </p>
     </div>
     <button class="btn btn-outline btn-sm" onclick="openSystemModal()" style="align-self: center;">
-        Diagnostics
+        Model Diagnostics
     </button>
 </div>
 {% endif %}
@@ -50,15 +50,15 @@
 </div>
 
 <!-- ========================================================================
-     TAB 1: ROAD IMAGE ANALYSIS
+     TAB 1: ROAD IMAGE ANALYSIS WORKSTATION
      ======================================================================== -->
 <div id="sectionImage" class="studio-section">
     <div class="studio-grid">
-        <!-- Left: Upload & Configuration -->
+        <!-- Left: Upload & Configuration (32%) -->
         <div class="studio-config-panel">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Image Input</h3>
+                    <h3 class="card-title">IMAGE INPUT</h3>
                     <span class="badge">JPG, PNG, WEBP</span>
                 </div>
                 <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
@@ -69,99 +69,215 @@
                         </div>
                         <div class="dropzone-title upload-title">Drop road photo or browse</div>
                         <div class="dropzone-sub">Supports high-resolution road imagery (max 50 MB)</div>
-                        <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageSelection(this.files[0])">
+                        <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp" class="hidden" onchange="handleImageSelection(this.files[0])">
                     </div>
 
-                    <!-- Confidence Slider -->
+                    <!-- Selected File Metadata Card -->
+                    <div id="imageFileMetaCard" class="file-meta-card hidden">
+                        <div class="file-meta-header">
+                            <img id="imageFileThumb" src="" alt="Thumbnail" class="file-meta-thumb">
+                            <div class="file-meta-info">
+                                <div id="selectedFileName" class="file-meta-name" title="pothole.jpg">pothole.jpg</div>
+                                <div class="file-meta-details">
+                                    <span id="selectedFileSize">0 KB</span>
+                                    <span>&bull;</span>
+                                    <span id="selectedFileDims">0 × 0 px</span>
+                                    <span>&bull;</span>
+                                    <span id="selectedFileType" class="badge badge-dark" style="font-size: 0.65rem; padding: 1px 4px;">JPG</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="file-meta-actions">
+                            <button id="btnReplaceImage" class="btn btn-outline btn-sm" style="flex: 1;" onclick="document.getElementById('imageFileInput').click()">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                <span>Replace Image</span>
+                            </button>
+                            <button id="btnRemoveImage" class="btn btn-outline btn-sm text-danger" onclick="removeSelectedImage()" title="Remove image">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                <span>Remove</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Confidence Threshold Slider -->
                     <div class="slider-container">
-                        <div class="form-label">
-                            <span>Confidence Threshold:</span>
+                        <div class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600;">Confidence Threshold:</span>
                             <span id="imgConfDisplay" class="slider-val-badge">25%</span>
                         </div>
-                        <input type="range" id="imgConfSlider" min="10" max="90" value="25" oninput="document.getElementById('imgConfDisplay').innerText = this.value + '%'">
-                        <span class="text-sm">Standard threshold: 25% (balances precision and recall)</span>
+                        <input type="range" id="imgConfSlider" min="5" max="95" value="25" step="1" oninput="updateConfidenceDisplay(this.value)">
+                        <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">
+                            <span>5% (Faint Fissures)</span>
+                            <span>95% (High Certainty)</span>
+                        </div>
+                        <span class="text-sm" style="margin-top: 0.35rem; display: block; line-height: 1.4;">
+                            Filters candidate detections by model prediction certainty. Lower values detect faint distress; higher values reduce false positives.
+                        </span>
                     </div>
 
+                    <!-- Model Status Warning for Inference Button -->
+                    {% if sys_status and not sys_status.inference_enabled %}
+                    <div class="alert-strip alert-strip-warning" style="padding: 0.65rem 0.85rem; font-size: 0.78rem;">
+                        <div>
+                            <strong>Inference Disabled:</strong> Add a compatible <code>models/best.pt</code> checkpoint to enable real road-damage detection.
+                            <a href="javascript:void(0)" onclick="openSystemModal()" style="color: var(--accent-orange); text-decoration: underline; margin-left: 4px;">Learn how</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <!-- Execute Button -->
-                    <button id="btnAnalyzeImage" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;" onclick="executeImageAnalysis()" {% if sys_status and not sys_status.inference_enabled %}disabled title="Trained road damage weights ('best.pt') required"{% endif %}>
+                    <button id="btnAnalyzeImage" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.25rem;" onclick="executeImageAnalysis()" disabled title="Select an image to inspect">
                         <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <span>Run Damage & Severity Assessment</span>
+                        <span id="btnAnalyzeImageText">Run Damage & Severity Assessment</span>
                     </button>
 
                     <!-- Loading Indicator -->
-                    <div id="imageLoader" class="hidden" style="text-align: center; color: var(--accent-primary); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;">
-                        Processing YOLO11 tensor inference & severity assessment...
+                    <div id="imageLoader" class="hidden" style="text-align: center; color: var(--accent-orange); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; padding: 0.5rem; background: rgba(240, 120, 53, 0.08); border-radius: var(--radius-sm); border: 1px dashed var(--accent-orange);">
+                        <div style="display: inline-block; animation: spin 1s linear infinite; margin-right: 0.5rem;">&#9696;</div>
+                        <span>Processing YOLO11 tensor inference & severity scoring...</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Viewport & Results Output -->
+        <!-- Right: Viewport & Results Output (68%) -->
         <div class="studio-viewport-panel">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
                 <div>
-                    <h3 class="card-title">Inspection Viewport</h3>
-                    <span class="card-subtitle">Real-time computer vision bounding boxes and hazard HUD</span>
+                    <h3 class="card-title">INSPECTION VIEWPORT</h3>
+                    <span class="card-subtitle">Computer vision analysis and road hazard visualization</span>
                 </div>
-                <div id="imageActions" class="hidden" style="display: flex; gap: 0.5rem;">
-                    <a id="btnDownloadImagePdf" href="#" class="btn btn-secondary btn-sm">PDF Report</a>
-                    <a id="btnDownloadImageCsv" href="#" class="btn btn-secondary btn-sm">CSV Data</a>
+                
+                <!-- Viewport Control Toolbar -->
+                <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                    <!-- Comparison Toggle (Original vs Annotated) -->
+                    <div id="imageCompareToggle" class="compare-toggle hidden">
+                        <button id="btnViewAnnotated" class="compare-btn active" onclick="setImageCompareMode('annotated')" title="View annotated detections and bounding boxes">ANNOTATED</button>
+                        <button id="btnViewOriginal" class="compare-btn" onclick="setImageCompareMode('original')" title="View original clean uploaded road image">ORIGINAL</button>
+                    </div>
+
+                    <!-- Zoom Controls -->
+                    <div class="zoom-toolbar">
+                        <button class="zoom-btn" onclick="adjustImageZoom(-0.25)" title="Zoom Out (-)">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        </button>
+                        <span id="imageZoomBadge" class="zoom-badge">100%</span>
+                        <button class="zoom-btn" onclick="adjustImageZoom(0.25)" title="Zoom In (+)">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        </button>
+                        <button class="zoom-btn" onclick="resetImageZoom()" title="Reset to Fit">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                        </button>
+                        <button class="zoom-btn" onclick="toggleViewportFullscreen()" title="Fullscreen Viewport">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Export Report Action Buttons -->
+                    <div id="imageActions" class="hidden" style="display: flex; gap: 0.5rem;">
+                        <a id="btnDownloadImagePdf" href="#" class="btn btn-secondary btn-sm" target="_blank">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            <span>PDF Report</span>
+                        </a>
+                        <a id="btnDownloadImageCsv" href="#" class="btn btn-secondary btn-sm">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>CSV Data</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <!-- Viewport Screen -->
+            <!-- Viewport Screen Canvas / Media -->
             <div class="viewport-screen" id="imagePreviewContainer">
                 <div class="viewport-placeholder">
                     <div class="viewport-placeholder-icon">
                         <svg class="icon icon-lg" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: #D2D7D0; margin-bottom: 0.25rem;">No image loaded</div>
-                        <div style="font-size: 0.82rem; color: #777D75;">Select or drop a pavement photo to begin inspection</div>
+                        <div style="font-weight: 700; color: #D2D7D0; margin-bottom: 0.25rem;">No Roadway Image Loaded</div>
+                        <div style="font-size: 0.82rem; color: #777D75;">Select or drop a pavement photo from the left panel to begin inspection</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Bottom Defect Counter Pill Bar -->
+            <!-- Damage Category Summary Bar (Below Viewport) -->
             <div class="viewport-counter-bar">
-                <div class="defect-pill-card">
-                    <span class="defect-pill-code">D00 Long.</span>
-                    <span class="defect-pill-count text-low" id="imgCountD00">0</span>
+                <div class="defect-pill-card not-analyzed" id="pillD00">
+                    <span class="defect-pill-code">D00 &bull; LONGITUDINAL</span>
+                    <span class="defect-pill-count" id="imgCountD00">&mdash;</span>
+                    <span class="defect-pill-sub" id="subD00">Not analyzed</span>
                 </div>
-                <div class="defect-pill-card">
-                    <span class="defect-pill-code">D10 Trans.</span>
-                    <span class="defect-pill-count text-moderate" id="imgCountD10">0</span>
+                <div class="defect-pill-card not-analyzed" id="pillD10">
+                    <span class="defect-pill-code">D10 &bull; TRANSVERSE</span>
+                    <span class="defect-pill-count" id="imgCountD10">&mdash;</span>
+                    <span class="defect-pill-sub" id="subD10">Not analyzed</span>
                 </div>
-                <div class="defect-pill-card">
-                    <span class="defect-pill-code">D20 Alligator</span>
-                    <span class="defect-pill-count text-high" id="imgCountD20">0</span>
+                <div class="defect-pill-card not-analyzed" id="pillD20">
+                    <span class="defect-pill-code">D20 &bull; ALLIGATOR</span>
+                    <span class="defect-pill-count" id="imgCountD20">&mdash;</span>
+                    <span class="defect-pill-sub" id="subD20">Not analyzed</span>
                 </div>
-                <div class="defect-pill-card">
-                    <span class="defect-pill-code">D40 Pothole</span>
-                    <span class="defect-pill-count text-critical" id="imgCountD40">0</span>
+                <div class="defect-pill-card not-analyzed" id="pillD40">
+                    <span class="defect-pill-code">D40 &bull; POTHOLE</span>
+                    <span class="defect-pill-count" id="imgCountD40">&mdash;</span>
+                    <span class="defect-pill-sub" id="subD40">Not analyzed</span>
                 </div>
-                <div class="defect-pill-card">
-                    <span class="defect-pill-code">OTHER Surface</span>
-                    <span class="defect-pill-count" id="imgCountOTHER">0</span>
+                <div class="defect-pill-card not-analyzed" id="pillOTHER">
+                    <span class="defect-pill-code">OTHER &bull; SURFACE</span>
+                    <span class="defect-pill-count" id="imgCountOTHER">&mdash;</span>
+                    <span class="defect-pill-sub" id="subOTHER">Not analyzed</span>
                 </div>
             </div>
 
-            <!-- Image Defects Result Table -->
-            <div id="imageDefectsTableContainer" class="hidden" style="padding: 1.25rem; border-top: 1px solid var(--border-color);">
-                <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Identified Road Distress Log</h4>
-                <div class="table-container" style="border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
-                    <table class="data-table" id="imageDefectsTable">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Classification</th>
-                                <th>Confidence</th>
-                                <th>Severity Tier</th>
-                                <th>Rationale</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+            <!-- Dedicated Severity Results Section (Appears after Inference) -->
+            <div id="imageSeveritySection" class="hidden" style="border-top: 1px solid var(--border-color);">
+                <div class="severity-summary-grid">
+                    <div class="severity-summary-card">
+                        <span class="severity-summary-label">OVERALL HAZARD SCORE</span>
+                        <div style="display: flex; align-items: baseline; gap: 0.35rem;">
+                            <span id="imgSeverityScore" class="severity-summary-val font-mono">0.0</span>
+                            <span style="font-size: 0.78rem; color: var(--text-muted);">/ 100</span>
+                        </div>
+                    </div>
+                    <div class="severity-summary-card">
+                        <span class="severity-summary-label">PEAK SEVERITY CLASSIFICATION</span>
+                        <div id="imgSeverityBadge" style="margin-top: 0.2rem;">
+                            <span class="badge badge-low">LOW</span>
+                        </div>
+                    </div>
+                    <div class="severity-summary-card">
+                        <span class="severity-summary-label">TOTAL DISTRESS ZONES</span>
+                        <span id="imgTotalDefects" class="severity-summary-val font-mono">0</span>
+                    </div>
+                    <div class="severity-summary-card">
+                        <span class="severity-summary-label">REQUIRED ACTION SLA</span>
+                        <span id="imgSeveritySla" class="severity-summary-val" style="font-size: 0.95rem; color: var(--accent-orange);">Routine Monitoring</span>
+                    </div>
+                </div>
+
+                <!-- Image Defects Result Table -->
+                <div id="imageDefectsTableContainer" style="padding: 1.25rem 1.5rem 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700;">Identified Road Distress Log</h4>
+                        <span id="imageInferenceLatency" class="font-mono text-sm" style="color: var(--text-muted);">Latency: 0.00s</span>
+                    </div>
+                    <div class="table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                        <table class="data-table" id="imageDefectsTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Classification</th>
+                                    <th>Confidence</th>
+                                    <th>Raw Severity</th>
+                                    <th>Adjusted Score</th>
+                                    <th>Severity Classification</th>
+                                    <th>Bounding Box [x1, y1, x2, y2]</th>
+                                    <th>Engineering Assessment Rationale</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,15 +285,15 @@
 </div>
 
 <!-- ========================================================================
-     TAB 2: DASHCAM VIDEO ANALYSIS
+     TAB 2: DASHCAM VIDEO ANALYSIS WORKSTATION
      ======================================================================== -->
 <div id="sectionVideo" class="studio-section hidden">
     <div class="studio-grid">
-        <!-- Left: Video Input Configuration -->
+        <!-- Left: Video Input Configuration (32%) -->
         <div class="studio-config-panel">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Video Input</h3>
+                    <h3 class="card-title">VIDEO INPUT</h3>
                     <span class="badge">MP4, AVI, MOV</span>
                 </div>
                 <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
@@ -188,22 +304,53 @@
                         </div>
                         <div class="dropzone-title upload-title">Drop dashcam video or browse</div>
                         <div class="dropzone-sub">Supports forward-facing dashcam footage up to 150 MB</div>
-                        <input type="file" id="videoFileInput" accept="video/*" class="hidden" onchange="handleVideoSelection(this.files[0])">
+                        <input type="file" id="videoFileInput" accept="video/mp4,video/avi,video/quicktime" class="hidden" onchange="handleVideoSelection(this.files[0])">
+                    </div>
+
+                    <!-- Selected Video Metadata Card -->
+                    <div id="videoFileMetaCard" class="file-meta-card hidden">
+                        <div class="file-meta-header">
+                            <div class="file-meta-thumb" style="display: flex; align-items: center; justify-content: center; color: var(--accent-orange);">
+                                <svg class="icon icon-md" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            </div>
+                            <div class="file-meta-info">
+                                <div id="selectedVideoName" class="file-meta-name" title="dashcam.mp4">dashcam.mp4</div>
+                                <div class="file-meta-details">
+                                    <span id="selectedVideoSize">0 MB</span>
+                                    <span>&bull;</span>
+                                    <span id="selectedVideoDuration">0.0s</span>
+                                    <span>&bull;</span>
+                                    <span id="selectedVideoDims">1920 × 1080</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="file-meta-actions">
+                            <button class="btn btn-outline btn-sm" style="flex: 1;" onclick="document.getElementById('videoFileInput').click()">
+                                <span>Replace Video</span>
+                            </button>
+                            <button class="btn btn-outline btn-sm text-danger" onclick="removeSelectedVideo()">
+                                <span>Remove</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Confidence Slider -->
                     <div class="slider-container">
-                        <div class="form-label">
-                            <span>Confidence Threshold:</span>
+                        <div class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600;">Confidence Threshold:</span>
                             <span id="vidConfDisplay" class="slider-val-badge">25%</span>
                         </div>
-                        <input type="range" id="vidConfSlider" min="10" max="90" value="25" oninput="document.getElementById('vidConfDisplay').innerText = this.value + '%'">
+                        <input type="range" id="vidConfSlider" min="5" max="95" value="25" step="1" oninput="document.getElementById('vidConfDisplay').innerText = this.value + '%'">
+                        <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">
+                            <span>5% (Faint Fissures)</span>
+                            <span>95% (High Certainty)</span>
+                        </div>
                     </div>
 
                     <!-- Progress Box -->
                     <div id="videoProgressContainer" class="video-progress-box hidden">
                         <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600;">
-                            <span>Processing Video...</span>
+                            <span>Processing Video Tensor Pipeline...</span>
                             <span id="videoProgressPercent" class="font-mono text-orange">0%</span>
                         </div>
                         <div class="progress-track">
@@ -216,7 +363,7 @@
                     </div>
 
                     <!-- Start Button -->
-                    <button id="btnAnalyzeVideo" class="btn btn-primary btn-lg" style="width: 100%;" onclick="executeVideoAnalysis()" {% if sys_status and not sys_status.inference_enabled %}disabled title="Trained road damage weights ('best.pt') required"{% endif %}>
+                    <button id="btnAnalyzeVideo" class="btn btn-primary btn-lg" style="width: 100%;" onclick="executeVideoAnalysis()" disabled title="Select a dashcam video to process">
                         <svg class="icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                         <span>Start Video Processing</span>
                     </button>
@@ -224,16 +371,19 @@
             </div>
         </div>
 
-        <!-- Right: Video Viewport & Deduplicated Defect Telemetry -->
+        <!-- Right: Video Viewport & Deduplicated Defect Telemetry (68%) -->
         <div class="studio-viewport-panel">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
                 <div>
-                    <h3 class="card-title">Video Inspection Viewport</h3>
+                    <h3 class="card-title">VIDEO INSPECTION VIEWPORT</h3>
                     <span class="card-subtitle">Multi-frame tracking & deduplicated defect counts</span>
                 </div>
                 <div id="videoActions" class="hidden" style="display: flex; gap: 0.5rem;">
-                    <a id="btnDownloadAnnotatedVideo" href="#" class="btn btn-secondary btn-sm" download>Download Video</a>
-                    <a id="btnDownloadVideoPdf" href="#" class="btn btn-secondary btn-sm">PDF Report</a>
+                    <a id="btnDownloadAnnotatedVideo" href="#" class="btn btn-secondary btn-sm" download>
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Download Video</span>
+                    </a>
+                    <a id="btnDownloadVideoPdf" href="#" class="btn btn-secondary btn-sm" target="_blank">PDF Report</a>
                     <a id="btnDownloadVideoCsv" href="#" class="btn btn-secondary btn-sm">CSV Data</a>
                 </div>
             </div>
@@ -244,7 +394,7 @@
                         <svg class="icon icon-lg" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/></svg>
                     </div>
                     <div>
-                        <div style="font-weight: 600; color: #D2D7D0; margin-bottom: 0.25rem;">No dashcam video loaded</div>
+                        <div style="font-weight: 700; color: #D2D7D0; margin-bottom: 0.25rem;">No Dashcam Video Loaded</div>
                         <div style="font-size: 0.82rem; color: #777D75;">Select or drop an MP4 / AVI road video to begin processing</div>
                     </div>
                 </div>
@@ -254,34 +404,38 @@
             <div id="videoTrackingStatsBox" class="hidden">
                 <div class="viewport-counter-bar">
                     <div class="defect-pill-card">
-                        <span class="defect-pill-code">Unique Defects</span>
+                        <span class="defect-pill-code">UNIQUE DEFECTS</span>
                         <span class="defect-pill-count text-orange" id="vidStatUnique">0</span>
                     </div>
                     <div class="defect-pill-card">
-                        <span class="defect-pill-code">Peak Severity</span>
+                        <span class="defect-pill-code">PEAK SEVERITY</span>
                         <span class="defect-pill-count" id="vidStatPeakSev" style="font-size: 1rem;">--</span>
                     </div>
                     <div class="defect-pill-card">
-                        <span class="defect-pill-code">Score</span>
+                        <span class="defect-pill-code">HAZARD SCORE</span>
                         <span class="defect-pill-count" id="vidStatPeakScore" style="font-size: 1rem;">--</span>
                     </div>
                     <div class="defect-pill-card">
-                        <span class="defect-pill-code">Total Frame Detections</span>
+                        <span class="defect-pill-code">TOTAL DETECTIONS</span>
                         <span class="defect-pill-count font-mono" id="vidStatFrameDets">0</span>
+                    </div>
+                    <div class="defect-pill-card">
+                        <span class="defect-pill-code">DEDUPLICATION RATIO</span>
+                        <span class="defect-pill-count text-lime" id="vidStatDedupeRatio" style="font-size: 1rem;">--</span>
                     </div>
                 </div>
 
                 <!-- Video Defects Table -->
-                <div style="padding: 1.25rem; border-top: 1px solid var(--border-color);">
-                    <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Deduplicated Video Track Registry</h4>
-                    <div class="table-container" style="border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+                <div style="padding: 1.25rem 1.5rem 1.5rem; border-top: 1px solid var(--border-color);">
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; font-weight: 700;">Deduplicated Video Track Registry</h4>
+                    <div class="table-container" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
                         <table class="data-table" id="videoDefectsTable">
                             <thead>
                                 <tr>
                                     <th>Track ID</th>
                                     <th>Classification</th>
                                     <th>Confidence</th>
-                                    <th>Severity Tier</th>
+                                    <th>Severity Classification</th>
                                     <th>Observation Lifetime</th>
                                     <th>Assessment Rationale</th>
                                 </tr>
@@ -296,21 +450,28 @@
 </div>
 
 <!-- ========================================================================
-     TAB 3: LIVE CAMERA FEED
+     TAB 3: LIVE CAMERA FEED WORKSTATION
      ======================================================================== -->
 <div id="sectionCamera" class="studio-section hidden">
     <div class="studio-grid">
-        <!-- Left: Camera Controls -->
+        <!-- Left: Camera Controls (32%) -->
         <div class="studio-config-panel">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Camera Feed Controls</h3>
+                    <h3 class="card-title">CAMERA FEED CONTROLS</h3>
                     <span class="badge badge-dark">WEBRTC</span>
                 </div>
                 <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
-                    <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
                         Stream camera video from vehicle dashcams or connected webcams for real-time inference and defect HUD rendering.
                     </p>
+
+                    <div>
+                        <label class="form-label" style="font-weight: 600; margin-bottom: 0.35rem; display: block;">Select Camera Device:</label>
+                        <select id="cameraDeviceSelect" class="form-control" style="width: 100%; padding: 0.5rem; background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: var(--font-body);">
+                            <option value="default">Default Highway / Vehicle Camera</option>
+                        </select>
+                    </div>
 
                     <div style="display: flex; align-items: center; gap: 0.65rem; padding: 0.75rem; background: var(--surface-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                         <span id="cameraStatusDot" class="dot-indicator"></span>
@@ -344,11 +505,11 @@
             </div>
         </div>
 
-        <!-- Right: Camera Live Stage -->
+        <!-- Right: Camera Live Stage (68%) -->
         <div class="studio-viewport-panel">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <h3 class="card-title">Live Vision Stage</h3>
+                    <h3 class="card-title">LIVE VISION STAGE</h3>
                     <span class="card-subtitle">Direct WebRTC stream with OpenCV HUD bounding boxes</span>
                 </div>
                 <span class="badge badge-lime">REAL-TIME</span>
@@ -366,6 +527,10 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+    // Pass backend system status to JavaScript
+    const MODEL_INFERENCE_ENABLED = {{ 'true' if sys_status and sys_status.inference_enabled else 'false' }};
+</script>
 <script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
 <script src="{{ url_for('static', filename='js/camera.js') }}"></script>
 <script>

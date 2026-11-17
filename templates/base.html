@@ -113,13 +113,27 @@
                 <!-- Group 4: SYSTEM -->
                 <div class="nav-group">
                     <div class="nav-group-title">System</div>
-                    <a href="javascript:void(0)" class="nav-link" onclick="openSystemModal()">
+                    <a href="javascript:void(0)" class="nav-link" onclick="openSystemModal()" title="View compute engine and YOLO model taxonomy status">
                         <div class="nav-link-content">
                             <!-- Chip / Model Status Icon -->
                             <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
                             <span class="nav-link-text">Model & Hardware</span>
                         </div>
                         <span class="dot-indicator {% if sys_status and sys_status.inference_enabled %}online{% else %}offline{% endif %}"></span>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" onclick="openSettingsModal()" title="Configure threshold defaults and studio preferences">
+                        <div class="nav-link-content">
+                            <!-- Settings Gear Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                            <span class="nav-link-text">Settings</span>
+                        </div>
+                    </a>
+                    <a href="javascript:void(0)" class="nav-link" onclick="openDocsModal()" title="View RDD2022 distress definitions and severity scoring formulas">
+                        <div class="nav-link-content">
+                            <!-- Book / Documentation Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            <span class="nav-link-text">Documentation</span>
+                        </div>
                     </a>
                 </div>
             </nav>
@@ -174,20 +188,22 @@
                         <span class="dot-indicator {% if sys_status and sys_status.cuda_available %}online{% else %}online{% endif %}"></span>
                         <span>{% if sys_status and sys_status.cuda_available %}CUDA 12.4 ACTIVE{% else %}CPU PIPELINE{% endif %}</span>
                         <span style="color: var(--border-strong);">&bull;</span>
+                        <span>{% if sys_status and sys_status.cuda_available %}{{ sys_status.device_name }}{% else %}CPU HOST{% endif %}</span>
+                        <span style="color: var(--border-strong);">&bull;</span>
                         <span>YOLO11 NANO</span>
                     </div>
 
                     <!-- Model Status Indicator Badge -->
                     {% if sys_status and sys_status.inference_enabled %}
-                    <span class="badge badge-lime">Model Online</span>
+                    <span class="badge badge-lime" title="Custom road damage model verified and ready">MODEL READY</span>
                     {% else %}
-                    <span class="badge badge-moderate" onclick="openSystemModal()" style="cursor: pointer;" title="Click for model diagnostics">Model Offline</span>
+                    <span class="badge badge-moderate" onclick="openSystemModal()" style="cursor: pointer;" title="Custom weights required. Click for diagnostics.">MODEL OFFLINE &bull; AWAITING best.pt</span>
                     {% endif %}
 
                     <!-- New Inspection Quick Action Button -->
                     <a href="/analysis" class="btn btn-primary btn-sm">
                         <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>New Inspection</span>
+                        <span>+ New Inspection</span>
                     </a>
                 </div>
             </header>
@@ -263,6 +279,122 @@
         </div>
     </div>
 
+    <!-- ====================================================================
+         SETTINGS MODAL
+         ==================================================================== -->
+    <div id="settingsModal" class="hidden" style="position: fixed; inset: 0; background: rgba(32, 37, 31, 0.65); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div class="card" style="width: 100%; max-width: 540px; box-shadow: var(--shadow-lg);">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon text-orange" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Studio & Inference Preferences
+                </h3>
+                <button class="btn btn-outline btn-sm" onclick="closeSettingsModal()">&times;</button>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <div>
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 0.35rem; display: block;">Default Confidence Threshold</label>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="range" id="settingDefaultConf" min="10" max="90" value="25" style="flex: 1;" oninput="document.getElementById('settingConfVal').innerText = this.value + '%'">
+                        <span id="settingConfVal" class="badge">25%</span>
+                    </div>
+                    <span class="text-sm">Standard threshold balancing recall of hairline fissures against false detections.</span>
+                </div>
+
+                <div>
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 0.35rem; display: block;">Inference Image Resolution (imgsz)</label>
+                    <select id="settingImgsz" class="form-control" style="width: 100%; padding: 0.5rem; background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: var(--font-body);">
+                        <option value="640" selected>640 × 640 px (Recommended for real-time inference)</option>
+                        <option value="1280">1280 × 1280 px (Ultra-high resolution crack profiling)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="form-label" style="font-weight: 600; margin-bottom: 0.35rem; display: block;">Video Processing Frame Stride</label>
+                    <select id="settingStride" class="form-control" style="width: 100%; padding: 0.5rem; background: var(--surface-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-family: var(--font-body);">
+                        <option value="1">1 Frame (Process every frame - Maximum precision)</option>
+                        <option value="2" selected>2 Frames (Process every 2nd frame - Balanced 30+ FPS)</option>
+                        <option value="5">5 Frames (Fast survey mode)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="text-sm">Preferences saved locally</span>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="closeSettingsModal()">Cancel</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Preferences</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         DOCUMENTATION & TAXONOMY MODAL
+         ==================================================================== -->
+    <div id="docsModal" class="hidden" style="position: fixed; inset: 0; background: rgba(32, 37, 31, 0.65); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div class="card" style="width: 100%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg);">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon text-orange" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    Field Intelligence Technical Documentation
+                </h3>
+                <button class="btn btn-outline btn-sm" onclick="closeDocsModal()">&times;</button>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <div>
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.4rem;">Road Distress Taxonomy (RDD2020 / RDD2022)</h4>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+                        Standardized distress categories following Seki Laboratory global pavement distress benchmarks:
+                    </p>
+                    <div style="margin-top: 0.65rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+                        <table class="data-table" style="font-size: 0.8rem;">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Distress Type</th>
+                                    <th>Hazard Base</th>
+                                    <th>Service Level Target</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>D00</strong></td><td>Longitudinal Crack</td><td>10.0 pts</td><td>Monitor Routine</td></tr>
+                                <tr><td><strong>D10</strong></td><td>Transverse Crack</td><td>16.0 pts</td><td>Repair &le; 30 Days</td></tr>
+                                <tr><td><strong>D20</strong></td><td>Alligator Fatigue</td><td>25.0 pts</td><td>Priority &le; 7 Days</td></tr>
+                                <tr><td><strong>D40</strong></td><td>Pothole Crater</td><td>35.0 pts</td><td>Urgent &le; 24 Hours</td></tr>
+                                <tr><td><strong>OTHER</strong></td><td>Surface Distress</td><td>8.0 pts</td><td>General Observation</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.4rem;">Empirical Severity Risk Index ($S_{emp} \in [5, 100]$)</h4>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+                        Severity is calculated objectively without making unsubstantiated depth claims:
+                        <br>
+                        <code>S = W_cat + S_area + S_prox + &Delta;_temporal</code>
+                        <br>
+                        Where <strong>W_cat</strong> is category hazard weight, <strong>S_area</strong> is visible bounding box area fraction, <strong>S_prox</strong> is perspective proximity in the lane travel path, and <strong>&Delta;_temporal</strong> is tracking persistence bonus/discount.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.95rem; margin-bottom: 0.4rem;">Studio Keyboard Shortcuts</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
+                        <div style="background: var(--surface-secondary); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);"><kbd>I</kbd> Switch to Image Analysis</div>
+                        <div style="background: var(--surface-secondary); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);"><kbd>V</kbd> Switch to Video Studio</div>
+                        <div style="background: var(--surface-secondary); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);"><kbd>C</kbd> Switch to Live Camera</div>
+                        <div style="background: var(--surface-secondary); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm);"><kbd>Esc</kbd> Dismiss Dialog Modals</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="text-sm">Academic Project &bull; ROADGUARD AI v3.0</span>
+                <button class="btn btn-secondary btn-sm" onclick="closeDocsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Global Layout Scripts -->
     <script>
         function toggleSidebar() {
@@ -288,6 +420,50 @@
             modal.style.display = "none";
         }
 
+        function openSettingsModal() {
+            const modal = document.getElementById("settingsModal");
+            modal.classList.remove("hidden");
+            modal.style.display = "flex";
+            // Populate current settings from localStorage
+            const savedConf = localStorage.getItem("roadguard_default_conf");
+            if (savedConf) {
+                document.getElementById("settingDefaultConf").value = savedConf;
+                document.getElementById("settingConfVal").innerText = savedConf + "%";
+            }
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById("settingsModal");
+            modal.classList.add("hidden");
+            modal.style.display = "none";
+        }
+
+        function saveSettings() {
+            const conf = document.getElementById("settingDefaultConf").value;
+            localStorage.setItem("roadguard_default_conf", conf);
+            // If on analysis page, update sliders
+            const imgSlider = document.getElementById("imgConfSlider");
+            const imgDisplay = document.getElementById("imgConfDisplay");
+            if (imgSlider && imgDisplay) {
+                imgSlider.value = conf;
+                imgDisplay.innerText = conf + "%";
+            }
+            closeSettingsModal();
+            showToast("Studio preferences saved successfully.", "success");
+        }
+
+        function openDocsModal() {
+            const modal = document.getElementById("docsModal");
+            modal.classList.remove("hidden");
+            modal.style.display = "flex";
+        }
+
+        function closeDocsModal() {
+            const modal = document.getElementById("docsModal");
+            modal.classList.add("hidden");
+            modal.style.display = "none";
+        }
+
         function showToast(message, type = "info") {
             const container = document.getElementById("toastContainer");
             const toast = document.createElement("div");
@@ -301,9 +477,23 @@
             }, 3500);
         }
 
-        // Close modal on escape
+        // Keyboard navigation and modal dismissal
         document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") closeSystemModal();
+            if (e.key === "Escape") {
+                closeSystemModal();
+                closeSettingsModal();
+                closeDocsModal();
+            }
+            // Studio tab shortcuts (only when not typing in input)
+            if (document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "SELECT" && document.activeElement.tagName !== "TEXTAREA") {
+                if ((e.key === "i" || e.key === "I") && typeof switchStudioTab === "function") {
+                    switchStudioTab("image");
+                } else if ((e.key === "v" || e.key === "V") && typeof switchStudioTab === "function") {
+                    switchStudioTab("video");
+                } else if ((e.key === "c" || e.key === "C") && typeof switchStudioTab === "function") {
+                    switchStudioTab("camera");
+                }
+            }
         });
     </script>
     {% block scripts %}{% endblock %}

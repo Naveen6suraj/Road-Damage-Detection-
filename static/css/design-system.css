@@ -7,47 +7,63 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
+    /* ======================================================================
+       PRIMARY SPECIFICATION DESIGN TOKENS
+       ====================================================================== */
+    --background: #F3F2ED;
+    --surface: #FFFFFF;
+    --surface-secondary: #EAE9E2;
+    --sidebar: #202820;
+    --sidebar-hover: #303B30;
+    --text-primary: #20251F;
+    --text-secondary: #777D75;
+    --accent-orange: #F07835;
+    --accent-orange-hover: #DE6426;
+    --accent-lime: #B8D94A;
+    --critical: #D94738;
+    --high: #E97932;
+    --moderate: #D8AA35;
+    --low: #3B966A;
+    --border: #DEDED5;
+
     /* Backgrounds & Surfaces */
-    --bg-primary: #F3F2ED;
-    --surface-primary: #FFFFFF;
-    --surface-secondary: #E9E8E1;
+    --bg-primary: var(--background);
+    --surface-primary: var(--surface);
     --surface-tertiary: #DFDED6;
     --surface-hover: #F8F8F5;
 
-    /* Sidebar - Technical Deep Charcoal */
-    --sidebar-bg: #20251F;
-    --sidebar-surface: #272D26;
-    --sidebar-border: #2F362E;
+    /* Sidebar - Dark Graphite-Green */
+    --sidebar-bg: var(--sidebar);
+    --sidebar-surface: var(--sidebar-hover);
+    --sidebar-border: #2B352B;
     --sidebar-text: #F5F5EF;
     --sidebar-text-muted: #8E958B;
-    --sidebar-active-bg: rgba(240, 120, 53, 0.14);
-    --sidebar-active-border: #F07835;
+    --sidebar-active-bg: rgba(240, 120, 53, 0.16);
+    --sidebar-active-border: var(--accent-orange);
 
     /* Typography Colors */
-    --text-primary: #20251F;
-    --text-secondary: #575D54;
-    --text-muted: #777D75;
+    --text-muted: var(--text-secondary);
     --text-light: #9B9E96;
 
     /* Accents */
-    --accent-primary: #F07835;            /* Industrial Roadwork Orange */
-    --accent-primary-hover: #D86321;
-    --accent-primary-subtle: rgba(240, 120, 53, 0.09);
-    --accent-secondary: #B8D94A;          /* Precision Radar Lime */
+    --accent-primary: var(--accent-orange);
+    --accent-primary-hover: var(--accent-orange-hover);
+    --accent-primary-subtle: rgba(240, 120, 53, 0.10);
+    --accent-secondary: var(--accent-lime);
     --accent-secondary-subtle: rgba(184, 217, 74, 0.14);
 
     /* Severity Colors (Road Distress Tiers) */
-    --sev-critical: #D94738;              /* Urgent structural crater */
-    --sev-critical-subtle: rgba(217, 71, 56, 0.10);
-    --sev-high: #E97932;                  /* Base fatigue / alligator */
-    --sev-high-subtle: rgba(233, 121, 50, 0.10);
-    --sev-moderate: #E4B83F;              /* Transverse / thermal crack */
-    --sev-moderate-subtle: rgba(228, 184, 63, 0.12);
-    --sev-low: #3B966A;                   /* Superficial hairline fissure */
-    --sev-low-subtle: rgba(59, 150, 106, 0.10);
+    --sev-critical: var(--critical);
+    --sev-critical-subtle: rgba(217, 71, 56, 0.12);
+    --sev-high: var(--high);
+    --sev-high-subtle: rgba(233, 121, 50, 0.12);
+    --sev-moderate: var(--moderate);
+    --sev-moderate-subtle: rgba(216, 170, 53, 0.14);
+    --sev-low: var(--low);
+    --sev-low-subtle: rgba(59, 150, 106, 0.12);
 
     /* Borders & Dividers */
-    --border-color: #DEDED5;
+    --border-color: var(--border);
     --border-strong: #C8C8BE;
     --border-subtle: #EAEAE2;
 
