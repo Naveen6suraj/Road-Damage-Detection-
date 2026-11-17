@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard | ROADGUARD AI{% endblock %}
+
+{% block content %}
+<div class="card-header" style="margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 1.75rem; font-weight: 800;">Road Condition Analytics Dashboard</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Aggregate defect registry and visual risk distribution across all analyzed roadways.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="/analysis" class="btn btn-primary btn-sm">+ Upload Media</a>
+    </div>
+</div>
+
+<!-- Stats Grid -->
+<section class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <span class="stat-title">Analyses Recorded</span>
+            <span class="stat-icon">📈</span>
+        </div>
+        <div class="stat-value">{{ stats.total_analyses or 0 }}</div>
+        <div class="stat-footer">{{ stats.total_videos or 0 }} Videos | {{ stats.total_images or 0 }} Images</div>
+    </div>
+
+    <div class="stat-card critical">
+        <div class="stat-header">
+            <span class="stat-title">Critical Defects</span>
+            <span class="stat-icon">🚨</span>
+        </div>
+        <div class="stat-value" style="color: var(--sev-critical);">{{ stats.critical_defects or 0 }}</div>
+        <div class="stat-footer">Urgent maintenance intervention</div>
+    </div>
+
+    <div class="stat-card high">
+        <div class="stat-header">
+            <span class="stat-title">High Severity</span>
+            <span class="stat-icon">⚠️</span>
+        </div>
+        <div class="stat-value" style="color: var(--sev-high);">{{ stats.high_defects or 0 }}</div>
+        <div class="stat-footer">High risk road distress</div>
+    </div>
+
+    <div class="stat-card moderate">
+        <div class="stat-header">
+            <span class="stat-title">Moderate Severity</span>
+            <span class="stat-icon">🟡</span>
+        </div>
+        <div class="stat-value" style="color: var(--sev-moderate);">{{ stats.moderate_defects or 0 }}</div>
+        <div class="stat-footer">Scheduled inspection queue</div>
+    </div>
+
+    <div class="stat-card low">
+        <div class="stat-header">
+            <span class="stat-title">Low Severity</span>
+            <span class="stat-icon">🟢</span>
+        </div>
+        <div class="stat-value" style="color: var(--sev-low);">{{ stats.low_defects or 0 }}</div>
+        <div class="stat-footer">Surface superficial cracks</div>
+    </div>
+</section>
+
+<!-- Analytics Visualizations -->
+<section class="dashboard-grid">
+    <div class="chart-card">
+        <div class="card-header">
+            <h3 class="card-title">Defect Distribution by Class</h3>
+            <span class="badge badge-low">All Records</span>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="dashboardClassChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="card-header">
+            <h3 class="card-title">Risk Severity Breakdown</h3>
+            <span class="badge badge-low">Ratio</span>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="dashboardSeverityChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- Complete Inspection Log Table -->
+<section class="panel-card">
+    <div class="card-header">
+        <h3 class="card-title">Inspection Records Database</h3>
+        <span class="badge badge-low">{{ recent|length }} Entries</span>
+    </div>
+
+    <div class="table-responsive">
+        {% if recent and recent|length > 0 %}
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Analysis ID</th>
+                    <th>Date & Time</th>
+                    <th>Media</th>
+                    <th>Source Filename</th>
+                    <th>Defects</th>
+                    <th>Peak Severity</th>
+                    <th>Confidence</th>
+                    <th>Duration</th>
+                    <th>Downloads</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in recent %}
+                <tr>
+                    <td><strong><a href="/results/{{ item.id }}" style="color: var(--accent-cyan); text-decoration: none;">{{ item.id }}</a></strong></td>
+                    <td>{{ item.created_at|datetime_format }}</td>
+                    <td>
+                        <span class="badge" style="background: var(--bg-elevated); color: var(--accent-cyan); border: 1px solid var(--border-subtle);">
+                            {{ item.media_type|upper }}
+                        </span>
+                    </td>
+                    <td>{{ item.filename }}</td>
+                    <td><strong>{{ item.unique_defects or item.total_defects or 0 }}</strong></td>
+                    <td>
+                        {% if item.max_severity_level == 'CRITICAL' %}
+                            <span class="badge badge-critical">CRITICAL ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                        {% elif item.max_severity_level == 'HIGH' %}
+                            <span class="badge badge-high">HIGH ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                        {% elif item.max_severity_level == 'MODERATE' %}
+                            <span class="badge badge-moderate">MODERATE ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                        {% else %}
+                            <span class="badge badge-low">LOW ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ "%.1f"|format((item.avg_confidence or 0.0) * 100) }}%</td>
+                    <td>{{ "%.2f"|format(item.processing_time_sec or 0.0) }}s</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="/api/reports/download/{{ item.id }}/pdf" class="btn btn-secondary btn-sm" title="Download Official PDF">PDF</a>
+                            <a href="/api/reports/download/{{ item.id }}/csv" class="btn btn-secondary btn-sm" title="Download Raw CSV">CSV</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <h3>No Records in Database</h3>
+            <p>Upload a video or photo to populate real analytics.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const classDist = {{ stats.class_distribution|tojson if stats and stats.class_distribution else '{"D00": 0, "D10": 0, "D20": 0, "D40": 0, "OTHER": 0}'|safe }};
+        const sevDist = {{ stats.severity_distribution|tojson if stats and stats.severity_distribution else '{"CRITICAL": 0, "HIGH": 0, "MODERATE": 0, "LOW": 0}'|safe }};
+
+        const ctxClass = document.getElementById("dashboardClassChart");
+        if (ctxClass) {
+            new Chart(ctxClass, {
+                type: "bar",
+                data: {
+                    labels: ["D00 Longitudinal", "D10 Transverse", "D20 Alligator", "D40 Pothole", "Other Corruption"],
+                    datasets: [{
+                        label: "Total Identified",
+                        data: [classDist.D00 || 0, classDist.D10 || 0, classDist.D20 || 0, classDist.D40 || 0, classDist.OTHER || 0],
+                        backgroundColor: ["#3b82f6", "#06b6d4", "#f97316", "#ef4444", "#8b5cf6"],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: "#1e2f56" }, ticks: { color: "#94a3b8" } },
+                        x: { grid: { display: false }, ticks: { color: "#94a3b8" } }
+                    }
+                }
+            });
+        }
+
+        const ctxSev = document.getElementById("dashboardSeverityChart");
+        if (ctxSev) {
+            new Chart(ctxSev, {
+                type: "pie",
+                data: {
+                    labels: ["Critical", "High", "Moderate", "Low"],
+                    datasets: [{
+                        data: [sevDist.CRITICAL || 0, sevDist.HIGH || 0, sevDist.MODERATE || 0, sevDist.LOW || 0],
+                        backgroundColor: ["#ef4444", "#f97316", "#f59e0b", "#10b981"],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: "bottom", labels: { color: "#94a3b8" } }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}500 Server Error | ROADGUARD AI{% endblock %}
+
+{% block content %}
+<div class="panel-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 3rem;">
+    <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Internal Server Error</h1>
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">{{ message or "An unexpected server error occurred during processing." }}</p>
+    <a href="/" class="btn btn-primary">Return to Dashboard</a>
+</div>
+{% endblock %}
