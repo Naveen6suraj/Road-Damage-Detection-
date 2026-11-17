@@ -241,6 +241,7 @@ class RoadDamageDetector:
                     "severity_score": sev["severity_score"],
                     "severity_level": sev["severity_level"],
                     "reason": sev["reason"],
+                    "contributions": sev.get("contributions", {}),
                     "contributing_factors": sev["contributing_factors"]
                 }
                 detections.append(full_det)
@@ -302,6 +303,7 @@ class RoadDamageDetector:
                     "severity_score": severity_result["severity_score"],
                     "severity_level": severity_result["severity_level"],
                     "reason": severity_result["reason"],
+                    "contributions": severity_result.get("contributions", {}),
                     "contributing_factors": severity_result["contributing_factors"]
                 }
                 detections.append(full_detection)

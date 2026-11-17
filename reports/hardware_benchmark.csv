@@ -1,0 +1,18 @@
+Metric,Value,Unit
+Timestamp (UTC),2026-11-17T16:56:03.503946+00:00,ISO8601
+App Version,3.1.0,str
+Model Evaluated,yolo11n.pt,filename
+Model Type,Base Model,category
+Compute Device,0,device
+GPU Name,NVIDIA GeForce RTX 3050 Laptop GPU,str
+CPU Name,"AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",str
+Model Load Latency,1101.28,ms
+Cold Start Latency,13111.94,ms
+Warm Latency (Mean),41.17,ms
+Warm Latency (P95),63.46,ms
+Batch Size,8,count
+Inference Throughput,81.4,FPS
+Peak GPU VRAM Allocated,231.6,MB
+Peak GPU VRAM Reserved,312.0,MB
+Process RAM (RSS),1143.7,MB
+System CPU Utilization,100.0,%

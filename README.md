@@ -3,17 +3,17 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![PyTorch 2.6 CUDA / CPU](https://img.shields.io/badge/PyTorch-2.6%20CUDA%2FCPU-green.svg)](https://pytorch.org/)
 [![YOLO11 Nano](https://img.shields.io/badge/Model-YOLO11%20Nano-cyan.svg)](https://docs.ultralytics.com/)
-[![Tests Passed](https://img.shields.io/badge/Tests-45%2F45%20Passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests Passed](https://img.shields.io/badge/Tests-57%2F57%20Passed-brightgreen.svg)](docs/TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Release: v3.0.0](https://img.shields.io/badge/Release-v3.0.0%20Field%20Intelligence-orange.svg)](https://github.com/Naveen6suraj/Road-Damage-Detection-)
+[![Release: v3.1.0](https://img.shields.io/badge/Release-v3.1.0%20AI%2FML%20Excellence-orange.svg)](https://github.com/Naveen6suraj/Road-Damage-Detection-)
 
-An academic and practical computer vision application for roadway condition assessment (v3.0.0 Field Intelligence Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports through an industrial UI/UX interface.
+An academic and practical computer vision application for roadway condition assessment (v3.1.0 Advanced AI/ML & Engineering Excellence Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via forward-motion spatial-temporal tracking, estimate empirical visual risk severity with 5-factor Explainable AI (XAI) feature decomposition, and generate executive PDF and CSV inspection reports through an industrial UI/UX interface.
 
 ---
 
 ## 1. Project Title
-**ROADGUARD AI (v3.0.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
-*Subtitle: FIELD INTELLIGENCE — Road Damage & Severity Platform*
+**ROADGUARD AI (v3.1.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
+*Subtitle: FIELD INTELLIGENCE — Advanced AI/ML & Engineering Excellence Upgrade*
 
 ---
 
@@ -267,31 +267,58 @@ Trained weights will automatically export to `models/best.pt`.
 
 ## 20. Testing Instructions
 
-Run the complete automated test suite (all 45 tests run sandboxed and do not require GPU):
+Run the complete automated test suite (57 tests covering 10 modules with 100% pass rate):
 ```powershell
 python -m pytest tests/ -v
 ```
 
-Run severity rule consistency evaluation:
+Run dataset validation and data leakage detection:
 ```powershell
-python evaluate.py --eval-severity-only
+python utils/dataset_validator.py --data data.yaml
+```
+
+Run hardware benchmark suite:
+```powershell
+python benchmark.py --iterations 10 --batch 8
+```
+
+Run evaluation pipeline and generate PDF / CSV reports:
+```powershell
+python evaluate.py
 ```
 
 ---
 
-## 21. Evaluation Results (Genuinely Measured)
+## 21. Empirical Evaluation & Hardware Benchmarks (Genuinely Measured)
 
-### Automated Test Suite:
-- **Total Tests Executed**: 45
-- **Tests Passed**: 45 (100% Pass Rate)
-- **Execution Time**: 4.67 seconds on Python 3.12.10
+### Hardware Benchmarks (NVIDIA GeForce RTX 3050 Laptop GPU / AMD Ryzen 5 5600H):
+*Source: `reports/hardware_benchmark.json` and `reports/hardware_benchmark.csv`*
+- **Compute Platform**: Windows 11, Python 3.12.10, PyTorch 2.6.0 CUDA 12.4
+- **Host GPU**: NVIDIA GeForce RTX 3050 Laptop GPU (4.0 GB VRAM)
+- **Model Load Latency**: **1,101.28 ms** (disk-to-VRAM initialization)
+- **Cold-Start Latency**: **13,111.94 ms** (first-pass CUDA kernel compilation)
+- **Single-Image Warm Latency**: **41.17 ms** (steady-state mean over 10 iterations)
+- **P95 Latency**: **63.46 ms** (Min: 26.19 ms, Max: 70.93 ms)
+- **Batch Inference Throughput**: **81.4 FPS** (batch size 8, 640x640 resolution)
+- **Peak GPU VRAM Allocated**: **231.6 MB** (Peak Reserved: **312.0 MB**)
+- **Process Memory Footprint**: **1,143.7 MB** (RSS)
 
-### Severity Engine Consistency Evaluation:
-- **Massive Near-Field Pothole**: 93.1 pts -> **CRITICAL** (Expected: CRITICAL) [PASS]
-- **Large Alligator Crack Section**: 79.0 pts -> **HIGH** (Expected: HIGH) [PASS]
-- **Moderate Transverse Crack**: 57.4 pts -> **MODERATE** (Expected: MODERATE) [PASS]
-- **Minor Distant Longitudinal Crack**: 26.4 pts -> **LOW** (Expected: LOW) [PASS]
-- **Consistency Score**: 4/4 Passed (100%)
+### Automated Test Suite (10 Modules):
+- **Total Tests Executed**: 57
+- **Tests Passed**: 57 (100% Pass Rate)
+- **Execution Time**: ~14.3 seconds on Python 3.12.10
+
+### Severity Engine & Explainable AI (XAI) Consistency Evaluation:
+*Source: `reports/model_evaluation.csv` and `reports/model_evaluation.pdf`*
+- **Critical Near-Field Pothole**: 96.1 pts -> **CRITICAL** (Cat: 35.0, Area: 35.0, Prox: 13.1, Geom: 10.0, Temp: +3.0) [PASS]
+- **High Alligator Crack Segment**: 71.2 pts -> **HIGH** (Cat: 25.0, Area: 28.0, Prox: 8.2, Geom: 10.0, Temp: 0.0) [PASS]
+- **Moderate Transverse Crack**: 57.4 pts -> **MODERATE** (Cat: 16.0, Area: 24.4, Prox: 7.0, Geom: 10.0, Temp: 0.0) [PASS]
+- **Low Longitudinal Crack (Distant)**: 26.4 pts -> **LOW** (Cat: 10.0, Area: 7.3, Prox: 3.1, Geom: 6.0, Temp: 0.0) [PASS]
+- **Transient 1-Frame Pothole Detection**: 78.4 pts -> **HIGH** (Cat: 35.0, Area: 24.4, Prox: 11.0, Geom: 10.0, Temp: -2.0) [PASS]
+- **Rule Consistency & Decomposition**: 5/5 Passed (100%)
+
+### Custom Road-Damage Model Status:
+- **Weights File (`models/best.pt`)**: Status: `BLOCKED BY MISSING RESOURCE`. Raw RDD2022 dataset images are not included in the repository. Generic COCO pretrained weights (`models/yolo11n.pt`) are strictly preserved as a transfer-learning base backbone and are prevented from running live road distress inference to uphold academic rigor. Training is fully reproducible with `python train.py`.
 
 ---
 

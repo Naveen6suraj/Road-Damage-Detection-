@@ -224,6 +224,13 @@ def estimate_severity(
         "severity_level": final_level,
         "persistence_adjustment": round(persistence_adjustment, 1),
         "reason": reason,
+        "contributions": {
+            "category": round(category_base, 1),
+            "area": round(area_score, 1),
+            "proximity": round(proximity_score, 1),
+            "geometry": round(geometry_score, 1),
+            "temporal": round(persistence_adjustment, 1)
+        },
         "contributing_factors": {
             "class_code": class_code,
             "category_hazard_pts": round(category_base, 1),

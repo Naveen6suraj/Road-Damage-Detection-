@@ -33,7 +33,7 @@
                         <span class="brand-descriptor">FIELD INTELLIGENCE</span>
                     </div>
                 </a>
-                <span class="version-pill">v3.0</span>
+                <span class="version-pill">v3.1</span>
             </div>
 
             <!-- Navigation Groups -->
@@ -257,7 +257,22 @@
                     </div>
                     <div style="background: var(--surface-secondary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
                         <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">PLATFORM VERSION</div>
-                        <div style="font-weight: 700; margin-top: 0.25rem;">ROADGUARD AI v3.0</div>
+                        <div style="font-weight: 700; margin-top: 0.25rem;">ROADGUARD AI v3.1</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                    <div style="background: var(--surface-secondary); padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);">WARM LATENCY</div>
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-top: 0.15rem;">~41 ms</div>
+                    </div>
+                    <div style="background: var(--surface-secondary); padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);">THROUGHPUT</div>
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--accent-orange); margin-top: 0.15rem;">81.4 FPS</div>
+                    </div>
+                    <div style="background: var(--surface-secondary); padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center;">
+                        <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);">PEAK VRAM</div>
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-top: 0.15rem;">231 MB</div>
                     </div>
                 </div>
 
@@ -372,9 +387,9 @@
                     <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
                         Severity is calculated objectively without making unsubstantiated depth claims:
                         <br>
-                        <code>S = W_cat + S_area + S_prox + &Delta;_temporal</code>
+                        <code>S = min(100.0, max(5.0, W_cat + W_area + W_pos + W_geom + &Delta;_pers))</code>
                         <br>
-                        Where <strong>W_cat</strong> is category hazard weight, <strong>S_area</strong> is visible bounding box area fraction, <strong>S_prox</strong> is perspective proximity in the lane travel path, and <strong>&Delta;_temporal</strong> is tracking persistence bonus/discount.
+                        Where <strong>W_cat</strong> is category hazard weight, <strong>W_area</strong> is visible bounding box area fraction, <strong>W_pos</strong> is perspective proximity in the lane travel path, <strong>W_geom</strong> is aspect ratio geometry, and <strong>&Delta;_pers</strong> is tracking persistence modifier.
                     </p>
                 </div>
 
@@ -389,7 +404,7 @@
                 </div>
             </div>
             <div class="card-footer">
-                <span class="text-sm">Academic Project &bull; ROADGUARD AI v3.0</span>
+                <span class="text-sm">Academic Project &bull; ROADGUARD AI v3.1</span>
                 <button class="btn btn-secondary btn-sm" onclick="closeDocsModal()">Close</button>
             </div>
         </div>

@@ -1,0 +1,15 @@
+Evaluation Section,Parameter / Metric,Value,Status / Notes
+Metadata,Application Version,3.0.0,ROADGUARD AI
+Metadata,Evaluation Timestamp,2026-11-17T16:57:49.285978+00:00,UTC
+Metadata,Compute Device,CUDA,NVIDIA GeForce RTX 3050 Laptop GPU
+Detection Model,Model Path,C:\Users\navee\.gemini\antigravity\scratch\RoadGuard-AI\models\best.pt,
+Detection Model,Execution Status,BLOCKED_BY_MISSING_RESOURCE,Custom road-damage weights not found at 'C:\Users\navee\.gemini\antigravity\scratch\RoadGuard-AI\models\best.pt'. Inference disabled to prevent generic COCO predictions from misrepresenting road defects.
+Detection Metrics,mAP@0.5,UNVERIFIED,Requires Ground-Truth Dataset
+Detection Metrics,mAP@0.5:0.95,UNVERIFIED,Requires Ground-Truth Dataset
+Severity Engine,Test Cases Total,5,Synthetic Benchmark
+Severity Engine,Test Cases Passed,5,100% Target
+Severity Case,Critical Near-Field Pothole,Score: 96.1 (CRITICAL),Cat:35.0 Area:35.0 Pos:13.1 Geom:10.0 Temp:3.0
+Severity Case,High Alligator Crack Segment,Score: 71.2 (HIGH),Cat:25.0 Area:28.0 Pos:8.2 Geom:10.0 Temp:0.0
+Severity Case,Moderate Transverse Crack,Score: 57.4 (MODERATE),Cat:16.0 Area:24.4 Pos:7.0 Geom:10.0 Temp:0.0
+Severity Case,Low Longitudinal Crack (Distant),Score: 26.4 (LOW),Cat:10.0 Area:7.3 Pos:3.1 Geom:6.0 Temp:0.0
+Severity Case,Transient 1-Frame Pothole Detection,Score: 78.4 (HIGH),Cat:35.0 Area:24.4 Pos:11.0 Geom:10.0 Temp:-2.0

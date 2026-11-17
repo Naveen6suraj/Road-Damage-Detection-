@@ -23,6 +23,9 @@ outputs/*
 !outputs/.gitkeep
 reports/*
 !reports/.gitkeep
+!reports/sample_report.*
+!reports/hardware_benchmark.*
+!reports/model_evaluation.*
 
 # IDEs
 .vscode/

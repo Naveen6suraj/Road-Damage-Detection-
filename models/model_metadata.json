@@ -1,0 +1,82 @@
+{
+  "model_name": "models/best.pt",
+  "base_model": "models/yolo11n.pt",
+  "architecture": "YOLO11n (Ultralytics)",
+  "version": "3.1.0",
+  "status": "BLOCKED_BY_MISSING_RESOURCE",
+  "required_codes": [
+    "D00",
+    "D10",
+    "D20",
+    "D40"
+  ],
+  "status_description": "Custom road-damage weights (models/best.pt) require training on RDD2022 or equivalent annotated road defect dataset. Generic COCO models are strictly rejected to avoid false detections.",
+  "dataset_specification": {
+    "name": "RDD2022 (Road Damage Dataset 2022)",
+    "annotation_format": "YOLO Normalized Bounding Boxes [class_id, x_center, y_center, width, height]",
+    "classes_required": [
+      "D00",
+      "D10",
+      "D20",
+      "D40"
+    ]
+  },
+  "taxonomy_mapping": {
+    "0": {
+      "code": "D00",
+      "name": "Longitudinal Crack",
+      "base_hazard": 10.0,
+      "description": "Linear crack propagating parallel to traffic flow"
+    },
+    "1": {
+      "code": "D10",
+      "name": "Transverse Crack",
+      "base_hazard": 16.0,
+      "description": "Linear crack propagating perpendicular to traffic flow across lane width"
+    },
+    "2": {
+      "code": "D20",
+      "name": "Alligator Crack",
+      "base_hazard": 25.0,
+      "description": "Interconnected structural fatigue cracking with polygonal pattern"
+    },
+    "3": {
+      "code": "D40",
+      "name": "Pothole",
+      "base_hazard": 35.0,
+      "description": "Depression or localized cavity presenting acute vehicle dynamics hazard"
+    },
+    "4": {
+      "code": "OTHER",
+      "name": "Other Road Distress",
+      "base_hazard": 8.0,
+      "description": "Unclassified roadway surface distress or rutting"
+    }
+  },
+  "input_resolution": [
+    640,
+    640
+  ],
+  "target_hardware": {
+    "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU (4.0 GB VRAM)",
+    "cpu": "AMD Ryzen 5 5600H",
+    "ram": "16 GB",
+    "precision": "FP16 (AMP)"
+  },
+  "recommended_hyperparameters": {
+    "epochs": 100,
+    "batch_size": 8,
+    "patience": 15,
+    "seed": 42,
+    "optimizer": "auto",
+    "amp": true,
+    "imgsz": 640
+  },
+  "metrics_summary": {
+    "status": "UNVERIFIED (Requires Dataset)",
+    "mAP50": null,
+    "mAP50_95": null,
+    "precision": null,
+    "recall": null
+  }
+}

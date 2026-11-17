@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-11-17T16:56:03.503946+00:00",
+  "version": "3.1.0",
+  "model_path": "C:\\Users\\navee\\.gemini\\antigravity\\scratch\\RoadGuard-AI\\models\\yolo11n.pt",
+  "is_base_model": true,
+  "model_status": "BASE_MODEL_BENCHMARK",
+  "device_used": "0",
+  "system": {
+    "os": "Windows 11 (10.0.26300)",
+    "python_version": "3.12.10",
+    "pytorch_version": "2.6.0+cu124",
+    "cpu": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "physical_cores": 6,
+    "total_cores": 12,
+    "system_ram_gb": 15.4,
+    "cuda_available": true,
+    "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "gpu_vram_capacity_gb": 4.0
+  },
+  "config": {
+    "warm_iterations": 10,
+    "batch_size": 8,
+    "input_resolution": [
+      640,
+      640
+    ]
+  },
+  "latencies_ms": {
+    "model_load": 1101.28,
+    "cold_start": 13111.94,
+    "warm_mean": 41.17,
+    "warm_min": 26.19,
+    "warm_max": 70.93,
+    "warm_std": 12.78,
+    "warm_p95": 63.46
+  },
+  "throughput": {
+    "batch_size": 8,
+    "fps": 81.4,
+    "ms_per_frame": 12.28
+  },
+  "memory": {
+    "gpu_allocated_mb": 42.1,
+    "gpu_reserved_mb": 312.0,
+    "gpu_peak_allocated_mb": 231.6,
+    "gpu_peak_reserved_mb": 312.0,
+    "process_rss_ram_mb": 1143.7,
+    "process_incremental_ram_mb": 724.2,
+    "system_cpu_percent": 100.0
+  }
+}

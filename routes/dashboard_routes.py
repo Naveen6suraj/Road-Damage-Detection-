@@ -3,6 +3,8 @@ ROADGUARD AI - Dashboard & Page Navigation Routes
 Module: routes/dashboard_routes.py
 """
 
+import os
+import json
 from flask import Blueprint, render_template, jsonify, request
 import database
 import config
@@ -134,12 +136,37 @@ def api_analyses_list():
 
 @dashboard_bp.route("/api/system/status")
 def api_system_status():
-    """Return hardware accelerator and YOLO model status."""
+    """Return hardware accelerator, YOLO model status, and benchmark telemetry."""
     status = get_detector().get_status()
+    bench_file = os.path.join(config.REPORT_FOLDER, "hardware_benchmark.json")
+    benchmark_data = None
+    if os.path.exists(bench_file):
+        try:
+            with open(bench_file, "r", encoding="utf-8") as f:
+                benchmark_data = json.load(f)
+        except Exception:
+            benchmark_data = None
+
     return jsonify({
         "success": True,
-        "system": status
+        "app_version": config.APP_VERSION,
+        "system": status,
+        "benchmark": benchmark_data
     })
+
+
+@dashboard_bp.route("/api/benchmark/status")
+def api_benchmark_status():
+    """Return detailed hardware benchmark report."""
+    bench_file = os.path.join(config.REPORT_FOLDER, "hardware_benchmark.json")
+    if os.path.exists(bench_file):
+        try:
+            with open(bench_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return jsonify({"success": True, "benchmark": data})
+        except Exception as e:
+            return jsonify({"success": False, "error": str(e)}), 500
+    return jsonify({"success": False, "message": "No hardware benchmark executed yet."}), 404
 
 
 @dashboard_bp.route("/api/model/status")

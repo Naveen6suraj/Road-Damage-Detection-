@@ -1,16 +1,22 @@
 """
 ROADGUARD AI - Multi-Object Defect Tracker
 Module: core/object_tracker.py
-Version: 2.1.1
+Version: 3.1.0
 
 Provides multi-frame temporal tracking of detected road damage to prevent
 repeated counting of the same defect across consecutive video frames.
-Differentiates between Confirmed Tracks (observed across >= min_hits frames)
-and Transient Detections (1-frame observations), preserving both in the final record
-without discarding unconfirmed detections or inflating defect tallies.
+Engineered specifically for forward-moving vehicular dashcams:
+- Two-stage association: Primary IoU matching + Secondary Forward-Motion Centroid fallback.
+- Camera motion compensation with velocity estimation.
+- Temporal persistence weighting (+3.0 pts for >= 5 hits, -2.0 pts for 1-hit transients).
+- Rigorous track deduplication.
+- Preserves both Confirmed Tracks (hits >= min_hits) and Transient Detections
+  without discarding unconfirmed detections or inflating defect tallies.
+- Explainable AI (XAI) feature contribution propagation.
 """
 
 from typing import List, Dict, Any, Tuple, Optional
+import math
 import numpy as np
 
 import config
@@ -50,7 +56,7 @@ class TrackedDefect:
     """
     Represents a unique tracked road defect across consecutive video frames.
     Maintains raw visual spatial severity, temporal persistence adjustments,
-    and confirmation status.
+    velocity estimation for camera motion compensation, and confirmation status.
     """
 
     def __init__(
@@ -65,8 +71,14 @@ class TrackedDefect:
         self.min_hits = min_hits
         self.class_code = detection.get("class_code", "OTHER")
         self.class_name = detection.get("class_name", "Unknown")
-        self.box = list(detection.get("box", [0, 0, 0, 0]))
+        self.box = [float(v) for v in detection.get("box", [0, 0, 0, 0])]
         self.representative_box = list(self.box)
+
+        # Centroid & Forward-motion dynamics
+        cx = (self.box[0] + self.box[2]) / 2.0
+        cy = (self.box[1] + self.box[3]) / 2.0
+        self.centroid = (cx, cy)
+        self.velocity = (0.0, 0.0)  # (vx, vy) in pixels/frame
 
         # History and statistics
         self.hits = 1
@@ -84,10 +96,25 @@ class TrackedDefect:
         self.peak_confidence = float(detection.get("confidence", 0.0))
         self.reason = detection.get("reason", "")
         self.contributing_factors = dict(detection.get("contributing_factors", {}))
+        self.contributions = dict(detection.get("contributions", {}))
 
     def update(self, detection: Dict[str, Any], frame_index: int, timestamp_sec: float):
-        """Update track state with a newly associated detection."""
-        self.box = list(detection.get("box", [0, 0, 0, 0]))
+        """Update track state with a newly associated detection and estimate motion."""
+        new_box = [float(v) for v in detection.get("box", [0, 0, 0, 0])]
+        new_cx = (new_box[0] + new_box[2]) / 2.0
+        new_cy = (new_box[1] + new_box[3]) / 2.0
+
+        # Motion estimation (exponential smoothing)
+        frames_elapsed = max(1, frame_index - self.last_frame)
+        inst_vx = (new_cx - self.centroid[0]) / frames_elapsed
+        inst_vy = (new_cy - self.centroid[1]) / frames_elapsed
+        self.velocity = (
+            0.6 * self.velocity[0] + 0.4 * inst_vx,
+            0.6 * self.velocity[1] + 0.4 * inst_vy
+        )
+        self.centroid = (new_cx, new_cy)
+        self.box = list(new_box)
+
         self.hits += 1
         self.age += 1
         self.time_since_update = 0
@@ -107,6 +134,15 @@ class TrackedDefect:
             self.peak_raw_severity_level = classify_severity_score(raw_sev)
             self.reason = detection.get("reason", "")
             self.contributing_factors = dict(detection.get("contributing_factors", {}))
+            if "contributions" in detection:
+                self.contributions = dict(detection["contributions"])
+
+    def predict_next_centroid(self) -> Tuple[float, float]:
+        """Predict the next frame centroid based on forward camera motion."""
+        return (
+            self.centroid[0] + self.velocity[0],
+            self.centroid[1] + max(0.0, self.velocity[1])  # Objects always move downward in forward dashcams
+        )
 
     @property
     def is_confirmed(self) -> bool:
@@ -136,6 +172,11 @@ class TrackedDefect:
         adj_score, adj_level, adj_pts = self.compute_adjusted_severity()
         status_str = "confirmed" if self.is_confirmed else "transient"
 
+        # Update temporal contribution
+        contributions_out = dict(self.contributions)
+        if contributions_out:
+            contributions_out["temporal"] = round(adj_pts, 1)
+
         return {
             "track_id": self.track_id,
             "class_code": self.class_code,
@@ -161,6 +202,7 @@ class TrackedDefect:
             "first_timestamp_sec": round(self.first_timestamp, 2),
             "last_timestamp_sec": round(self.last_timestamp, 2),
             "reason": self.reason,
+            "contributions": contributions_out,
             "contributing_factors": self.contributing_factors
         }
 
@@ -168,7 +210,8 @@ class TrackedDefect:
 class RoadDefectTracker:
     """
     Online spatial-temporal tracker designed specifically for forward-moving dashcams.
-    Associates road defects across frames using IoU and adaptive spatial distance.
+    Associates road defects across frames using primary IoU matching and
+    secondary forward-motion adaptive distance fallback.
     Preserves both Confirmed Tracks and Transient Detections.
     """
 
@@ -176,11 +219,13 @@ class RoadDefectTracker:
         self,
         iou_threshold: float = config.TRACKER_IOU_THRESHOLD,
         max_age: int = config.TRACKER_MAX_AGE,
-        min_hits: int = config.TRACKER_MIN_HITS
+        min_hits: int = config.TRACKER_MIN_HITS,
+        max_distance_px: float = 90.0
     ):
         self.iou_threshold = iou_threshold
         self.max_age = max_age
         self.min_hits = min_hits
+        self.max_distance_px = max_distance_px
         self.next_track_id = 1
         self.active_tracks: List[TrackedDefect] = []
         self.confirmed_history: List[TrackedDefect] = []
@@ -220,7 +265,7 @@ class RoadDefectTracker:
                 annotated_detections.append(det_copy)
             return annotated_detections
 
-        # Association using IoU & Class Matching
+        # STAGE 1: Primary Association using IoU & Class Consistency
         matched_tracks = set()
         matched_detections = set()
         matches = []
@@ -235,7 +280,7 @@ class RoadDefectTracker:
             for t_idx, track in enumerate(self.active_tracks):
                 if t_idx in matched_tracks:
                     continue
-                # Enforce strict class consistency across frames
+                # Strict class consistency
                 if det_code != track.class_code:
                     continue
 
@@ -247,6 +292,48 @@ class RoadDefectTracker:
             if best_track_idx >= 0 and best_iou >= self.iou_threshold:
                 matches.append((det_idx, best_track_idx))
                 matched_tracks.add(best_track_idx)
+                matched_detections.add(det_idx)
+
+        # STAGE 2: Secondary Association with Forward-Motion Centroid Fallback
+        # Handles rapid forward vehicle progression where IoU drops below threshold
+        for det_idx, det in enumerate(detections):
+            if det_idx in matched_detections:
+                continue
+
+            det_box = det["box"]
+            det_code = det.get("class_code", "OTHER")
+            det_cx = (det_box[0] + det_box[2]) / 2.0
+            det_cy = (det_box[1] + det_box[3]) / 2.0
+
+            best_dist = float("inf")
+            best_fallback_track_idx = -1
+
+            for t_idx, track in enumerate(self.active_tracks):
+                if t_idx in matched_tracks:
+                    continue
+                if det_code != track.class_code:
+                    continue
+
+                # Adaptive distance limit based on track size
+                track_w = max(10.0, track.box[2] - track.box[0])
+                track_h = max(10.0, track.box[3] - track.box[1])
+                adaptive_limit = max(self.max_distance_px, 1.25 * math.hypot(track_w, track_h))
+
+                # Forward motion constraint:
+                # Road defects in forward dashcams move downward (increasing y) as vehicle approaches.
+                # Allow a small upward margin (15px) for camera bounce/vehicle pitch.
+                pred_cx, pred_cy = track.predict_next_centroid()
+                if det_cy < (track.centroid[1] - 15.0):
+                    continue
+
+                dist = math.hypot(det_cx - pred_cx, det_cy - pred_cy)
+                if dist <= adaptive_limit and dist < best_dist:
+                    best_dist = dist
+                    best_fallback_track_idx = t_idx
+
+            if best_fallback_track_idx >= 0:
+                matches.append((det_idx, best_fallback_track_idx))
+                matched_tracks.add(best_fallback_track_idx)
                 matched_detections.add(det_idx)
 
         # Update matched tracks
