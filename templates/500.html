@@ -1,12 +1,20 @@
 {% extends "base.html" %}
 
-{% block title %}500 Server Error | ROADGUARD AI{% endblock %}
+{% block title %}500 &bull; System Processing Error &bull; ROADGUARD AI{% endblock %}
+{% block breadcrumb %}500 ERROR{% endblock %}
 
 {% block content %}
-<div class="panel-card" style="max-width: 600px; margin: 4rem auto; text-align: center; padding: 3rem;">
-    <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
-    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Internal Server Error</h1>
-    <p style="color: var(--text-secondary); margin-bottom: 2rem;">{{ message or "An unexpected server error occurred during processing." }}</p>
-    <a href="/" class="btn btn-primary">Return to Dashboard</a>
+<div class="card" style="max-width: 580px; margin: 4rem auto; text-align: center;">
+    <div class="empty-state">
+        <div class="empty-state-icon text-critical">
+            <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="empty-state-title">Internal Server Error</div>
+        <div class="empty-state-desc">{{ message or "An unexpected runtime error occurred in the execution engine. Check server logs or restart the process." }}</div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+            <a href="/" class="btn btn-primary">Return to Command Center</a>
+            <button class="btn btn-secondary" onclick="window.location.reload()">Retry Operation</button>
+        </div>
+    </div>
 </div>
 {% endblock %}

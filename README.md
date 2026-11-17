@@ -3,23 +3,24 @@
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![PyTorch 2.6 CUDA / CPU](https://img.shields.io/badge/PyTorch-2.6%20CUDA%2FCPU-green.svg)](https://pytorch.org/)
 [![YOLO11 Nano](https://img.shields.io/badge/Model-YOLO11%20Nano-cyan.svg)](https://docs.ultralytics.com/)
-[![Tests Passed](https://img.shields.io/badge/Tests-42%2F42%20Passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests Passed](https://img.shields.io/badge/Tests-45%2F45%20Passed-brightgreen.svg)](docs/TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release: v3.0.0](https://img.shields.io/badge/Release-v3.0.0%20Field%20Intelligence-orange.svg)](https://github.com/Naveen6suraj/Road-Damage-Detection-)
 
-An academic and practical computer vision application for roadway condition assessment (v2.1.1 Audited Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports.
+An academic and practical computer vision application for roadway condition assessment (v3.0.0 Field Intelligence Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports through an industrial UI/UX interface.
 
 ---
 
 ## 1. Project Title
-**ROADGUARD AI (v2.1.1): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
-*Subtitle: Intelligent Road Damage Detection & Severity Assessment System*
+**ROADGUARD AI (v3.0.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
+*Subtitle: FIELD INTELLIGENCE — Road Damage & Severity Platform*
 
 ---
 
 ## 2. Abstract
 Roadway surface distress poses severe threats to vehicular safety, municipal maintenance budgets, and transit efficiency. Conventional road inspections rely on expensive profiling vans or hazardous visual foot-surveys, while existing deep-learning demonstrators merely produce uncalibrated bounding boxes without estimating physical hazard severity or deduplicating video detections. 
 
-ROADGUARD AI addresses this gap with an end-to-end AI monitoring system. Powered by YOLO11 Nano accelerated via PyTorch CUDA (with transparent CPU fallback), the system combines real-time object detection with an IoU/Centroid multi-object tracker that prevents duplicate counting across video frames. Furthermore, an empirical Severity Estimation Engine evaluates defect type, normalized visible damage area, lane perspective proximity, and multi-frame persistence into an empirical 0–100 Visual Severity Risk Index across four maintenance action tiers: **CRITICAL**, **HIGH**, **MODERATE**, and **LOW**. The system features a responsive dark-navy dashboard, WebRTC live camera inspection, automated PDF report generation, and SQLite historical persistence.
+ROADGUARD AI addresses this gap with an end-to-end AI monitoring system. Powered by YOLO11 Nano accelerated via PyTorch CUDA (with transparent CPU fallback), the system combines real-time object detection with an IoU/Centroid multi-object tracker that prevents duplicate counting across video frames. Furthermore, an empirical Severity Estimation Engine evaluates defect type, normalized visible damage area, lane perspective proximity, and multi-frame persistence into an empirical 0–100 Visual Severity Risk Index across four maintenance action tiers: **CRITICAL**, **HIGH**, **MODERATE**, and **LOW**. The platform features an industrial "Field Intelligence" engineering interface with modular CSS architecture, responsive fixed sidebar navigation, split-hero Command Center, dedicated Analysis Studio workstation, historical inspection registry with live search, and automated executive PDF/CSV report generation.
 
 ---
 
@@ -57,18 +58,24 @@ The prior repository codebase suffered from several technical and architectural 
 
 ---
 
-## 7. Proposed System (v2.1.1 Audited Release)
-ROADGUARD AI transforms the repository into an academically verified, hardened application:
-- Modular architecture with clean Flask Blueprints and SQLite database persistence (`roadguard.db`).
-- Strict model validation guard rejecting generic COCO weights to prevent false road distress reports.
-- Complete road damage taxonomy enforcement (`D00`, `D10`, `D20`, `D40`).
-- Automatic hardware detection with GPU acceleration (CUDA) and CPU fallback.
-- `RoadDefectTracker` implementing IoU and centroid association with Confirmed vs Transient separation and class-matching integrity.
-- `core/severity_engine.py` calculating empirical visual risk indices with transparent rationales, temporal persistence bonus (+3.0 pts), and transient discount (-2.0 pts).
-- Directory traversal defense and safe production secret key validation.
-- Asynchronous video processing with real-time polling progress feedback (FPS, frame count, elapsed time).
-- Executive ReportLab PDF generation and CSV export displaying Status and Raw/Adjusted severity.
-- 42 automated tests covering all modules with 100% pass rate.
+## 7. Proposed System (v3.0.0 Field Intelligence Release)
+ROADGUARD AI transforms the repository into an academically verified, hardened, enterprise-grade application:
+- **Field Intelligence UI/UX Architecture**: Completely redesigned industrial design system with 6 modular CSS files (`design-system.css`, `layout.css`, `components.css`, `dashboard.css`, `analysis.css`, `responsive.css`).
+- **Ergonomic Information Hierarchy**: Fixed vertical navigation sidebar (expanded 268px, collapsed 76px) with Lucide-style inline SVGs, 4 navigation groups (OVERVIEW, INSPECTION, INTELLIGENCE, SYSTEM), live telemetry hardware pill, and diagnostic telemetry modal.
+- **Split-Hero Command Center (`/`)**: Editorial split-hero (`1.15fr 0.85fr`) layout with active roadway HUD simulation preview, hardware readiness strip (`CUDA 12.4 ACTIVE • YOLO11 NANO`), asymmetric KPI metrics, custom damage composition breakdown, and recent inspections register.
+- **Road Condition Intelligence (`/dashboard`)**: Strategic metrics (Sessions, Critical Hazards, High Risk, Defect Density), RDD2022 distress taxonomy reference table with base weights ($W_{cat}$) and SLA targets, dynamic Chart.js defect distribution charts, and full inspection registry.
+- **Analysis Studio (`/analysis`)**: Dedicated 3-mode workstation (Road Image, Dashcam Video, WebRTC Camera) with reactive parameter sliders, dropzones, live defect counter pills, and defect log tables.
+- **Engineering Inspection Report (`/results/<id>`)**: Annotated media viewer with severity badge, Visual Pavement Hazard Index ($S \in [5.0, 100.0]$), and full Detection Register.
+- **Inspection History Portal (`/history`)**: Dedicated historical records manager with live client-side search, media filters (All/Image/Video), severity tier filters, and deletion actions.
+- **Report Management Center (`/reports`)**: Executive document export center with metadata cards (PDF Flowables, RFC 4180 CSV, Seki Lab Standard) and one-click PDF/CSV report generation.
+- **Strict Model Validation**: Guard rejecting generic COCO weights to prevent false road distress reports and complete road damage taxonomy enforcement (`D00`, `D10`, `D20`, `D40`).
+- **Hardware Acceleration**: Automatic hardware detection with GPU acceleration (CUDA) and CPU fallback.
+- **Spatial-Temporal Tracking**: `RoadDefectTracker` implementing IoU and centroid association with Confirmed vs Transient separation and class-matching integrity.
+- **Empirical Severity Scoring**: `core/severity_engine.py` calculating empirical visual risk indices with transparent rationales, temporal persistence bonus (+3.0 pts), and transient discount (-2.0 pts).
+- **Directory Traversal Defense**: Safe production secret key validation and hardened media serving.
+- **Asynchronous Video Pipeline**: Polling progress feedback (FPS, frame count, elapsed time).
+- **Executive PDF & CSV Reports**: ReportLab PDF generation displaying Status and Raw/Adjusted severity.
+- **45 Automated Tests**: 100% pass rate covering all detection, severity, tracking, video, and route modules.
 
 ---
 
@@ -76,7 +83,7 @@ ROADGUARD AI transforms the repository into an academically verified, hardened a
 
 ```mermaid
 flowchart TD
-    Client["Client Web Browser\n(Dashboard / Analysis Studio / Webcam)"]
+    Client["Client Web Browser\n(Command Center / Analysis Studio / Webcam)"]
     Flask["Flask Application (app.py)\nBlueprints: Dashboard, Image, Video, Camera, Reports"]
     Detector["YOLO11 Nano Detector\n(NVIDIA GPU CUDA / CPU Fallback)"]
     Severity["Severity Engine\n(Visual Risk 0-100)"]
@@ -108,8 +115,8 @@ For complete sequence diagrams, see [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_AR
 - **Backend Framework**: Python 3.12, Flask 3.1
 - **Persistence**: SQLite 3 (zero-configuration relational database)
 - **Report Generation**: ReportLab 5.1
-- **Frontend Architecture**: Modern Dark Navy UI, CSS3 Custom Properties, Vanilla ES6+ JavaScript, Chart.js 4.4
-- **Automated Testing**: pytest 9.2
+- **Frontend Architecture**: Field Intelligence Design System (Modular CSS: `design-system.css`, `layout.css`, `components.css`, `dashboard.css`, `analysis.css`, `responsive.css`), Space Grotesk + Inter typography, Vanilla ES6+ JavaScript, Chart.js 4.4
+- **Automated Testing**: pytest 9.2 (45/45 Passed)
 
 ---
 
@@ -260,7 +267,7 @@ Trained weights will automatically export to `models/best.pt`.
 
 ## 20. Testing Instructions
 
-Run the complete automated test suite (all 42 tests run sandboxed and do not require GPU):
+Run the complete automated test suite (all 45 tests run sandboxed and do not require GPU):
 ```powershell
 python -m pytest tests/ -v
 ```
@@ -275,9 +282,9 @@ python evaluate.py --eval-severity-only
 ## 21. Evaluation Results (Genuinely Measured)
 
 ### Automated Test Suite:
-- **Total Tests Executed**: 42
-- **Tests Passed**: 42 (100% Pass Rate)
-- **Execution Time**: 5.84 seconds on Python 3.12.10
+- **Total Tests Executed**: 45
+- **Tests Passed**: 45 (100% Pass Rate)
+- **Execution Time**: 4.67 seconds on Python 3.12.10
 
 ### Severity Engine Consistency Evaluation:
 - **Massive Near-Field Pothole**: 93.1 pts -> **CRITICAL** (Expected: CRITICAL) [PASS]
@@ -289,12 +296,15 @@ python evaluate.py --eval-severity-only
 ---
 
 ## 22. UI Layout & Application Sections
-1. **Dashboard (`/dashboard`)**: KPI metric cards, real-time Chart.js charts, complete inspection records database.
-2. **Analysis Studio (`/analysis`)**:
-   - **📸 Road Image Analysis**: Drag-and-drop zone, confidence slider, HUD preview, defect counter pills, registry table.
-   - **🎥 Dashcam Video Analysis**: Video upload, real-time progress bar, deduplicated defect tracking, video playback.
+1. **Command Center (`/`)**: High-impact editorial workstation featuring live roadway HUD simulation preview, hardware readiness telemetry strip (`CUDA 12.4 ACTIVE • YOLO11 NANO`), asymmetric KPI metrics, custom damage composition breakdown, and recent inspections register.
+2. **Road Condition Intelligence (`/dashboard`)**: Strategic pavement analytics dashboard with KPI metric cards, RDD2022 distress taxonomy reference table with base weights ($W_{cat}$) and SLA targets, interactive Chart.js defect distribution charts, and full inspection registry.
+3. **Analysis Studio (`/analysis`)**: Dedicated 3-mode road inspection workstation:
+   - **📸 Road Image Analysis**: Drag-and-drop zone, confidence slider, HUD preview, defect counter pills, and registry table.
+   - **🎥 Dashcam Video Analysis**: Asynchronous video upload, real-time progress bar, deduplicated defect tracking, and video playback.
    - **📹 Live Camera Feed**: WebRTC live webcam stream with real-time inference and HUD overlays.
-3. **Results View (`/results/<id>`)**: Detailed inspection report, side-by-side media player, PDF and CSV download buttons.
+4. **Engineering Inspection Report (`/results/<id>`)**: Comprehensive inspection report, annotated media player, Visual Pavement Hazard Index ($S \in [5.0, 100.0]$), and full Detection Register.
+5. **Inspection History Portal (`/history`)**: Dedicated historical records manager with live client-side search, media filters (All/Image/Video), severity tier filters, and deletion actions.
+6. **Report Management Center (`/reports`)**: Executive document export center with metadata cards (PDF Flowables, RFC 4180 CSV, Seki Lab Standard) and one-click PDF/CSV report generation.
 
 ---
 

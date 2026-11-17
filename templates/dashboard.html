@@ -1,142 +1,272 @@
 {% extends "base.html" %}
 
-{% block title %}Analytics Dashboard | ROADGUARD AI{% endblock %}
+{% block title %}Road Condition Intelligence &bull; ROADGUARD AI{% endblock %}
+{% block breadcrumb %}ANALYTICS &bull; INTELLIGENCE{% endblock %}
 
 {% block content %}
-<div class="card-header" style="margin-bottom: 2rem;">
+<!-- Page Header -->
+<div class="page-header">
     <div>
-        <h1 style="font-size: 1.75rem; font-weight: 800;">Road Condition Analytics Dashboard</h1>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Aggregate defect registry and visual risk distribution across all analyzed roadways.</p>
+        <h1 class="page-header-title">Road Condition Intelligence</h1>
+        <p class="page-header-sub">Road Condition Analytics Dashboard &bull; Aggregate distress distribution and empirical risk telemetry across municipal infrastructure.</p>
     </div>
-    <div style="display: flex; gap: 0.75rem;">
-        <a href="/analysis" class="btn btn-primary btn-sm">+ Upload Media</a>
+    <div class="page-header-actions">
+        <a href="/analysis" class="btn btn-primary btn-sm">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ Upload Media</span>
+        </a>
     </div>
 </div>
 
-<!-- Stats Grid -->
-<section class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-title">Analyses Recorded</span>
-            <span class="stat-icon">📈</span>
+<!-- Key Performance Indicators Strip -->
+<section class="kpi-grid">
+    <div class="kpi-card kpi-hero">
+        <div class="kpi-header">
+            <span class="kpi-label">TOTAL SESSIONS</span>
+            <span class="badge">{{ stats.total_analyses or 0 }} Total</span>
         </div>
-        <div class="stat-value">{{ stats.total_analyses or 0 }}</div>
-        <div class="stat-footer">{{ stats.total_videos or 0 }} Videos | {{ stats.total_images or 0 }} Images</div>
-    </div>
-
-    <div class="stat-card critical">
-        <div class="stat-header">
-            <span class="stat-title">Critical Defects</span>
-            <span class="stat-icon">🚨</span>
-        </div>
-        <div class="stat-value" style="color: var(--sev-critical);">{{ stats.critical_defects or 0 }}</div>
-        <div class="stat-footer">Urgent maintenance intervention</div>
-    </div>
-
-    <div class="stat-card high">
-        <div class="stat-header">
-            <span class="stat-title">High Severity</span>
-            <span class="stat-icon">⚠️</span>
-        </div>
-        <div class="stat-value" style="color: var(--sev-high);">{{ stats.high_defects or 0 }}</div>
-        <div class="stat-footer">High risk road distress</div>
-    </div>
-
-    <div class="stat-card moderate">
-        <div class="stat-header">
-            <span class="stat-title">Moderate Severity</span>
-            <span class="stat-icon">🟡</span>
-        </div>
-        <div class="stat-value" style="color: var(--sev-moderate);">{{ stats.moderate_defects or 0 }}</div>
-        <div class="stat-footer">Scheduled inspection queue</div>
-    </div>
-
-    <div class="stat-card low">
-        <div class="stat-header">
-            <span class="stat-title">Low Severity</span>
-            <span class="stat-icon">🟢</span>
-        </div>
-        <div class="stat-value" style="color: var(--sev-low);">{{ stats.low_defects or 0 }}</div>
-        <div class="stat-footer">Surface superficial cracks</div>
-    </div>
-</section>
-
-<!-- Analytics Visualizations -->
-<section class="dashboard-grid">
-    <div class="chart-card">
-        <div class="card-header">
-            <h3 class="card-title">Defect Distribution by Class</h3>
-            <span class="badge badge-low">All Records</span>
-        </div>
-        <div class="chart-wrapper">
-            <canvas id="dashboardClassChart"></canvas>
+        <div class="kpi-value">{{ stats.total_analyses or 0 }}</div>
+        <div class="kpi-footer">
+            <span>{{ stats.total_videos or 0 }} Dashcam Videos &bull; {{ stats.total_images or 0 }} Pavement Photos</span>
         </div>
     </div>
 
-    <div class="chart-card">
-        <div class="card-header">
-            <h3 class="card-title">Risk Severity Breakdown</h3>
-            <span class="badge badge-low">Ratio</span>
+    <div class="kpi-card kpi-critical">
+        <div class="kpi-header">
+            <span class="kpi-label">CRITICAL HAZARDS</span>
+            <span class="badge badge-critical">IMMEDIATE</span>
         </div>
-        <div class="chart-wrapper">
-            <canvas id="dashboardSeverityChart"></canvas>
+        <div class="kpi-value">{{ stats.critical_defects or 0 }}</div>
+        <div class="kpi-footer text-critical">
+            <span>S &ge; 80.0 (High collision risk)</span>
+        </div>
+    </div>
+
+    <div class="kpi-card kpi-high">
+        <div class="kpi-header">
+            <span class="kpi-label">HIGH RISK</span>
+            <span class="badge badge-high">7 DAYS</span>
+        </div>
+        <div class="kpi-value">{{ stats.high_defects or 0 }}</div>
+        <div class="kpi-footer">
+            <span>S &in; [60.0, 79.9] Base fatigue</span>
+        </div>
+    </div>
+
+    <div class="kpi-card kpi-moderate">
+        <div class="kpi-header">
+            <span class="kpi-label">MODERATE</span>
+            <span class="badge badge-moderate">30 DAYS</span>
+        </div>
+        <div class="kpi-value">{{ stats.moderate_defects or 0 }}</div>
+        <div class="kpi-footer">
+            <span>S &in; [30.0, 59.9] Thermal joint</span>
+        </div>
+    </div>
+
+    <div class="kpi-card kpi-low">
+        <div class="kpi-header">
+            <span class="kpi-label">DEFECTS / SESSION</span>
+            <span class="badge badge-low">RATIO</span>
+        </div>
+        <div class="kpi-value">
+            {% if stats.total_analyses and stats.total_analyses > 0 %}
+                {{ "%.1f"|format((stats.total_defects or 0) / stats.total_analyses) }}
+            {% else %}
+                0.0
+            {% endif %}
+        </div>
+        <div class="kpi-footer">
+            <span>Average distress density</span>
         </div>
     </div>
 </section>
 
-<!-- Complete Inspection Log Table -->
-<section class="panel-card">
+<!-- Visualizations Grid -->
+<section class="analytics-grid">
+    <div class="chart-card">
+        <div class="chart-header">
+            <div>
+                <h3 class="card-title">Defect Distribution by Class</h3>
+                <span class="card-subtitle">Validated RDD2022 Distress Categories</span>
+            </div>
+            <span class="badge badge-dark">TAXONOMY</span>
+        </div>
+        <div class="chart-body">
+            {% if stats.total_defects and stats.total_defects > 0 %}
+            <div style="position: relative; height: 260px;">
+                <canvas id="dashboardClassChart"></canvas>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg class="icon icon-lg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                <div class="empty-state-title">No class metrics available</div>
+                <div class="empty-state-desc">Class counts are compiled in real-time as inspection sessions are evaluated by the YOLO11 detector.</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <div>
+                <h3 class="card-title">Pavement Risk Severity Ratio</h3>
+                <span class="card-subtitle">Empirical Visual Severity Allocation</span>
+            </div>
+            <span class="badge badge-orange">S &isin; [5, 100]</span>
+        </div>
+        <div class="chart-body">
+            {% if stats.total_defects and stats.total_defects > 0 %}
+            <div style="position: relative; height: 260px;">
+                <canvas id="dashboardSeverityChart"></canvas>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div class="empty-state-title">No risk data recorded</div>
+                <div class="empty-state-desc">Risk severity tiers are assigned dynamically based on defect category, perspective proximity, and persistence.</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Distress Category Specifications Table -->
+<section class="card">
     <div class="card-header">
-        <h3 class="card-title">Inspection Records Database</h3>
-        <span class="badge badge-low">{{ recent|length }} Entries</span>
+        <div>
+            <h3 class="card-title">Distress Taxonomy & Hazard Baseline Reference</h3>
+            <span class="card-subtitle">Empirical scoring weights ($W_{cat}$) defined in accordance with highway pavement distress standards</span>
+        </div>
+        <span class="badge">SPECIFICATION</span>
+    </div>
+    <div class="table-container" style="border: none; border-radius: 0; box-shadow: none;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Defect Classification</th>
+                    <th>Base Hazard ($W_{cat}$)</th>
+                    <th>Primary Physical Threat</th>
+                    <th>Recommended SLA</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge badge-critical font-mono">D40</span></td>
+                    <td><strong>Pothole</strong></td>
+                    <td class="font-mono">35.0 pts</td>
+                    <td>Direct rim distortion, tyre punctures, vehicle loss-of-control</td>
+                    <td><span class="badge badge-critical">&le; 24 - 48 Hours</span></td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-high font-mono">D20</span></td>
+                    <td><strong>Alligator Crack</strong></td>
+                    <td class="font-mono">25.0 pts</td>
+                    <td>Sub-base layer fatigue failure, rapid water ingress, pothole precursor</td>
+                    <td><span class="badge badge-high">&le; 7 Days</span></td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-moderate font-mono">D10</span></td>
+                    <td><strong>Transverse Crack</strong></td>
+                    <td class="font-mono">16.0 pts</td>
+                    <td>Thermal contraction fractures perpendicular to travel direction</td>
+                    <td><span class="badge badge-moderate">Routine &le; 30 Days</span></td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-low font-mono">D00</span></td>
+                    <td><strong>Longitudinal Crack</strong></td>
+                    <td class="font-mono">10.0 pts</td>
+                    <td>Pavement joint wear running parallel to lane travel direction</td>
+                    <td><span class="badge badge-low">Scheduled Monitoring</span></td>
+                </tr>
+                <tr>
+                    <td><span class="badge font-mono">OTHER</span></td>
+                    <td><strong>Surface Corruption / Ravelling</strong></td>
+                    <td class="font-mono">8.0 pts</td>
+                    <td>Surface binder loss, stone dislodgement, aggregate weathering</td>
+                    <td><span class="badge">Periodic Maintenance</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Complete Inspection Records Table -->
+<section class="card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Inspection Sessions Database</h3>
+            <span class="card-subtitle">{{ recent|length }} total sessions recorded</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="/reports" class="btn btn-secondary btn-sm">Report Center</a>
+            <a href="/analysis" class="btn btn-primary btn-sm">+ New Inspection</a>
+        </div>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-container" style="border: none; border-radius: 0; box-shadow: none;">
         {% if recent and recent|length > 0 %}
-        <table class="custom-table">
+        <table class="data-table">
             <thead>
                 <tr>
                     <th>Analysis ID</th>
                     <th>Date & Time</th>
                     <th>Media</th>
-                    <th>Source Filename</th>
-                    <th>Defects</th>
-                    <th>Peak Severity</th>
-                    <th>Confidence</th>
-                    <th>Duration</th>
-                    <th>Downloads</th>
+                    <th>Source File</th>
+                    <th>Tracked Defects</th>
+                    <th>Max Risk Tier</th>
+                    <th>Avg Confidence</th>
+                    <th>Latency</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in recent %}
                 <tr>
-                    <td><strong><a href="/results/{{ item.id }}" style="color: var(--accent-cyan); text-decoration: none;">{{ item.id }}</a></strong></td>
-                    <td>{{ item.created_at|datetime_format }}</td>
                     <td>
-                        <span class="badge" style="background: var(--bg-elevated); color: var(--accent-cyan); border: 1px solid var(--border-subtle);">
+                        <a href="/results/{{ item.id }}" style="color: var(--accent-primary); font-family: var(--font-mono); font-weight: 600; text-decoration: none;">
+                            {{ item.id }}
+                        </a>
+                        {% if item.is_demo %}
+                        <span class="badge" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem;">DEMO</span>
+                        {% endif %}
+                    </td>
+                    <td class="font-mono text-sm">{{ item.created_at|datetime_format }}</td>
+                    <td>
+                        <span class="badge {% if item.media_type == 'video' %}badge-orange{% else %}badge-dark{% endif %}">
                             {{ item.media_type|upper }}
                         </span>
                     </td>
-                    <td>{{ item.filename }}</td>
-                    <td><strong>{{ item.unique_defects or item.total_defects or 0 }}</strong></td>
+                    <td style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ item.filename }}">
+                        {{ item.filename }}
+                    </td>
+                    <td>
+                        <strong class="font-mono">{{ item.unique_defects or item.total_defects or 0 }}</strong>
+                    </td>
                     <td>
                         {% if item.max_severity_level == 'CRITICAL' %}
-                            <span class="badge badge-critical">CRITICAL ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                            <span class="badge badge-critical">CRITICAL [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
                         {% elif item.max_severity_level == 'HIGH' %}
-                            <span class="badge badge-high">HIGH ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                            <span class="badge badge-high">HIGH [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
                         {% elif item.max_severity_level == 'MODERATE' %}
-                            <span class="badge badge-moderate">MODERATE ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                            <span class="badge badge-moderate">MODERATE [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
+                        {% elif item.max_severity_level == 'LOW' %}
+                            <span class="badge badge-low">LOW [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
                         {% else %}
-                            <span class="badge badge-low">LOW ({{ "%.0f"|format(item.max_severity_score) }})</span>
+                            <span class="badge">CLEAN</span>
                         {% endif %}
                     </td>
-                    <td>{{ "%.1f"|format((item.avg_confidence or 0.0) * 100) }}%</td>
-                    <td>{{ "%.2f"|format(item.processing_time_sec or 0.0) }}s</td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <a href="/api/reports/download/{{ item.id }}/pdf" class="btn btn-secondary btn-sm" title="Download Official PDF">PDF</a>
-                            <a href="/api/reports/download/{{ item.id }}/csv" class="btn btn-secondary btn-sm" title="Download Raw CSV">CSV</a>
-                        </div>
+                    <td class="font-mono text-sm">{{ "%.1f"|format((item.avg_confidence or 0.0) * 100) }}%</td>
+                    <td class="font-mono text-sm">{{ "%.2f"|format(item.processing_time_sec or 0.0) }}s</td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="/results/{{ item.id }}" class="btn btn-secondary btn-sm">Inspect</a>
+                        <a href="/api/reports/download/{{ item.id }}/pdf" class="btn btn-outline btn-sm">PDF</a>
+                        <a href="/api/reports/download/{{ item.id }}/csv" class="btn btn-outline btn-sm">CSV</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -144,9 +274,12 @@
         </table>
         {% else %}
         <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
-            <h3>No Records in Database</h3>
-            <p>Upload a video or photo to populate real analytics.</p>
+            <div class="empty-state-icon">
+                <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="empty-state-title">No inspection sessions found</div>
+            <div class="empty-state-desc">Upload a road dashcam video or inspection image to generate your first road condition report.</div>
+            <a href="/analysis" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">+ Perform First Inspection</a>
         </div>
         {% endif %}
     </div>
@@ -154,21 +287,26 @@
 {% endblock %}
 
 {% block scripts %}
+{% if stats.total_defects and stats.total_defects > 0 %}
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const classDist = {{ stats.class_distribution|tojson if stats and stats.class_distribution else '{"D00": 0, "D10": 0, "D20": 0, "D40": 0, "OTHER": 0}'|safe }};
-        const sevDist = {{ stats.severity_distribution|tojson if stats and stats.severity_distribution else '{"CRITICAL": 0, "HIGH": 0, "MODERATE": 0, "LOW": 0}'|safe }};
-
-        const ctxClass = document.getElementById("dashboardClassChart");
-        if (ctxClass) {
-            new Chart(ctxClass, {
-                type: "bar",
+    document.addEventListener("DOMContentLoaded", function() {
+        // 1. Defect Category Bar Chart
+        const classCtx = document.getElementById("dashboardClassChart");
+        if (classCtx) {
+            new Chart(classCtx, {
+                type: 'bar',
                 data: {
-                    labels: ["D00 Longitudinal", "D10 Transverse", "D20 Alligator", "D40 Pothole", "Other Corruption"],
+                    labels: ['D00 Longitudinal', 'D10 Transverse', 'D20 Alligator', 'D40 Pothole', 'OTHER'],
                     datasets: [{
-                        label: "Total Identified",
-                        data: [classDist.D00 || 0, classDist.D10 || 0, classDist.D20 || 0, classDist.D40 || 0, classDist.OTHER || 0],
-                        backgroundColor: ["#3b82f6", "#06b6d4", "#f97316", "#ef4444", "#8b5cf6"],
+                        label: 'Observed Defects',
+                        data: [
+                            {{ stats.class_distribution.D00 or 0 }},
+                            {{ stats.class_distribution.D10 or 0 }},
+                            {{ stats.class_distribution.D20 or 0 }},
+                            {{ stats.class_distribution.D40 or 0 }},
+                            {{ stats.class_distribution.OTHER or 0 }}
+                        ],
+                        backgroundColor: ['#3B966A', '#E4B83F', '#E97932', '#D94738', '#777D75'],
                         borderRadius: 6
                     }]
                 },
@@ -177,34 +315,58 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: "#1e2f56" }, ticks: { color: "#94a3b8" } },
-                        x: { grid: { display: false }, ticks: { color: "#94a3b8" } }
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, color: '#777D75' },
+                            grid: { color: '#EAEAE2' }
+                        },
+                        x: {
+                            ticks: { color: '#575D54', font: { family: 'Inter', size: 11 } },
+                            grid: { display: false }
+                        }
                     }
                 }
             });
         }
 
-        const ctxSev = document.getElementById("dashboardSeverityChart");
-        if (ctxSev) {
-            new Chart(ctxSev, {
-                type: "pie",
+        // 2. Risk Severity Doughnut Chart
+        const sevCtx = document.getElementById("dashboardSeverityChart");
+        if (sevCtx) {
+            new Chart(sevCtx, {
+                type: 'doughnut',
                 data: {
-                    labels: ["Critical", "High", "Moderate", "Low"],
+                    labels: ['Critical (80-100)', 'High (60-79)', 'Moderate (30-59)', 'Low (0-29)'],
                     datasets: [{
-                        data: [sevDist.CRITICAL || 0, sevDist.HIGH || 0, sevDist.MODERATE || 0, sevDist.LOW || 0],
-                        backgroundColor: ["#ef4444", "#f97316", "#f59e0b", "#10b981"],
-                        borderWidth: 0
+                        data: [
+                            {{ stats.critical_defects or 0 }},
+                            {{ stats.high_defects or 0 }},
+                            {{ stats.moderate_defects or 0 }},
+                            {{ stats.low_defects or 0 }}
+                        ],
+                        backgroundColor: ['#D94738', '#E97932', '#E4B83F', '#3B966A'],
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: "bottom", labels: { color: "#94a3b8" } }
-                    }
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                font: { family: 'Inter', size: 12 },
+                                color: '#575D54',
+                                boxWidth: 12,
+                                padding: 12
+                            }
+                        }
+                    },
+                    cutout: '65%'
                 }
             });
         }
     });
 </script>
+{% endif %}
 {% endblock %}

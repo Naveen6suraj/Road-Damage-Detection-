@@ -1,0 +1,374 @@
+/**
+ * ROADGUARD AI v3.0 — FIELD INTELLIGENCE
+ * Module: static/css/dashboard.css
+ * Command Center Editorial Hero, Asymmetric KPI Grid & Analytics Panels
+ */
+
+/* ==========================================================================
+   EDITORIAL SPLIT HERO SECTION
+   ========================================================================== */
+.hero-editorial {
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.hero-editorial-left {
+    padding: 3rem 3rem 3rem 3.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.25rem;
+}
+
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.75rem;
+    background-color: var(--accent-primary-subtle);
+    color: var(--accent-primary);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(240, 120, 53, 0.25);
+    width: fit-content;
+}
+
+.hero-title {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.12;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+}
+
+.hero-title span {
+    color: var(--accent-primary);
+}
+
+.hero-description {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 540px;
+}
+
+.hero-cta-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+/* Hero Right Visual Column */
+.hero-editorial-right {
+    background: #181C17;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 380px;
+}
+
+.hero-road-visual {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.78;
+    filter: contrast(1.08) brightness(0.92);
+}
+
+/* Simulated Computer-Vision HUD Overlay on Hero */
+.hero-cv-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 60% 70%, rgba(240, 120, 53, 0.12) 0%, transparent 65%);
+}
+
+.hero-cv-box {
+    position: absolute;
+    bottom: 24%;
+    right: 28%;
+    width: 160px;
+    height: 85px;
+    border: 2px solid var(--sev-critical);
+    box-shadow: 0 0 15px rgba(217, 71, 56, 0.35);
+}
+
+.hero-cv-corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: #FFFFFF;
+}
+.hero-cv-corner.tl { top: -2px; left: -2px; border-top: 3px solid #FFF; border-left: 3px solid #FFF; }
+.hero-cv-corner.tr { top: -2px; right: -2px; border-top: 3px solid #FFF; border-right: 3px solid #FFF; }
+.hero-cv-corner.bl { bottom: -2px; left: -2px; border-bottom: 3px solid #FFF; border-left: 3px solid #FFF; }
+.hero-cv-corner.br { bottom: -2px; right: -2px; border-bottom: 3px solid #FFF; border-right: 3px solid #FFF; }
+
+.hero-cv-badge {
+    position: absolute;
+    top: -24px;
+    left: -2px;
+    background: #181C17;
+    border: 1px solid var(--sev-critical);
+    color: #FFFFFF;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.hero-telemetry-tag {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 1.25rem;
+    background: rgba(32, 37, 31, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ==========================================================================
+   TECHNICAL READINESS STRIP
+   ========================================================================== */
+.readiness-strip {
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    box-shadow: var(--shadow-xs);
+}
+
+.readiness-items {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.readiness-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.82rem;
+}
+
+.readiness-label {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.readiness-val {
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* Model Warning Inline Banner */
+.model-warning-card {
+    background-color: #FFF8EE;
+    border: 1px solid #F6D8A6;
+    border-radius: var(--radius-md);
+    padding: 1.15rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.model-warning-icon {
+    color: var(--accent-primary);
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+/* ==========================================================================
+   ASYMMETRIC EDITORIAL KPI GRID
+   ========================================================================== */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+    gap: 1.25rem;
+}
+
+.kpi-card {
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-xs);
+    position: relative;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+}
+
+/* Hero / Primary KPI Tile */
+.kpi-hero {
+    background: linear-gradient(145deg, #FFFFFF 0%, #F8F7F2 100%);
+    border-left: 4px solid var(--accent-primary);
+}
+
+.kpi-critical {
+    border-left: 4px solid var(--sev-critical);
+}
+
+.kpi-high {
+    border-left: 4px solid var(--sev-high);
+}
+
+.kpi-moderate {
+    border-left: 4px solid var(--sev-moderate);
+}
+
+.kpi-low {
+    border-left: 4px solid var(--sev-low);
+}
+
+.kpi-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.kpi-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+
+.kpi-value {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-hero .kpi-value {
+    font-size: 3rem;
+}
+
+.kpi-critical .kpi-value { color: var(--sev-critical); }
+.kpi-high .kpi-value { color: var(--sev-high); }
+.kpi-moderate .kpi-value { color: #9A7712; }
+.kpi-low .kpi-value { color: var(--sev-low); }
+
+.kpi-footer {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+/* ==========================================================================
+   ANALYTICS PREVIEW SECTION
+   ========================================================================== */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.chart-card {
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chart-body {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 280px;
+}
+
+/* Custom Horizontal Bar Breakdown */
+.dist-bar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.dist-bar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dist-bar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.dist-bar-track {
+    height: 8px;
+    background-color: var(--surface-secondary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    display: flex;
+}
+
+.dist-bar-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width var(--transition-smooth);
+}

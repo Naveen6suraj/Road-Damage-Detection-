@@ -37,6 +37,25 @@ def test_analysis_page(client):
     assert b"Road Defect Analysis Studio" in res.data
 
 
+def test_history_page(client):
+    res = client.get("/history")
+    assert res.status_code == 200
+    assert b"Inspection History" in res.data
+
+
+def test_reports_page(client):
+    res = client.get("/reports")
+    assert res.status_code == 200
+    assert b"Executive Inspection Reports" in res.data
+
+
+def test_api_delete_analysis_not_found(client):
+    res = client.delete("/api/analyses/non_existent_id_999999")
+    assert res.status_code == 404
+    data = res.get_json()
+    assert data["success"] is False
+
+
 def test_api_dashboard_stats(client):
     res = client.get("/api/dashboard/stats")
     assert res.status_code == 200

@@ -1,0 +1,238 @@
+/**
+ * ROADGUARD AI v3.0 — FIELD INTELLIGENCE
+ * Module: static/css/analysis.css
+ * Analysis Studio Workstation, Media Upload Dropzones, Live Camera & Results
+ */
+
+/* ==========================================================================
+   STUDIO WORKSTATION LAYOUT
+   ========================================================================== */
+.studio-grid {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.75rem;
+    align-items: flex-start;
+}
+
+/* Studio Left Configuration Panel */
+.studio-config-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Studio Right Viewport / Inspection Panel */
+.studio-viewport-panel {
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    min-height: 580px;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   UPLOAD DROPZONE
+   ========================================================================== */
+.dropzone {
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    background-color: var(--surface-secondary);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+}
+
+.dropzone:hover, .dropzone.dragover {
+    border-color: var(--accent-primary);
+    background-color: var(--accent-primary-subtle);
+}
+
+.dropzone-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    background-color: var(--surface-primary);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-primary);
+    margin-bottom: 0.25rem;
+}
+
+.dropzone-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.dropzone-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Viewport Preview Area */
+.viewport-screen {
+    flex: 1;
+    background-color: #121512;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 420px;
+    overflow: hidden;
+}
+
+.viewport-media {
+    max-width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.viewport-placeholder {
+    color: #6A7268;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.viewport-placeholder-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #1E231E;
+    border: 1px solid #2C332C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8C948A;
+}
+
+/* Viewport HUD Overlay Bar */
+.viewport-hud {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.viewport-hud-tag {
+    background: rgba(24, 28, 23, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Viewport Bottom Defect Pill Bar */
+.viewport-counter-bar {
+    padding: 1rem 1.5rem;
+    background-color: var(--surface-primary);
+    border-top: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+}
+
+.defect-pill-card {
+    background-color: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.defect-pill-code {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.defect-pill-count {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   VIDEO INSPECTION PROGRESS STRIP
+   ========================================================================== */
+.video-progress-box {
+    background-color: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--accent-primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-fast);
+}
+
+/* ==========================================================================
+   LIVE CAMERA VIEWPORT
+   ========================================================================== */
+.camera-stage {
+    position: relative;
+    width: 100%;
+    background-color: #0F120E;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    min-height: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-feed {
+    width: 100%;
+    height: 100%;
+    max-height: 480px;
+    object-fit: cover;
+}
+
+.camera-canvas {
+    width: 100%;
+    height: 100%;
+    max-height: 480px;
+    object-fit: cover;
+}

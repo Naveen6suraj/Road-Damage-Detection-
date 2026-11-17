@@ -1,0 +1,341 @@
+/**
+ * ROADGUARD AI v3.0 — FIELD INTELLIGENCE
+ * Module: static/css/design-system.css
+ * Core Design Tokens, Typography, Resets & Base System
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+    /* Backgrounds & Surfaces */
+    --bg-primary: #F3F2ED;
+    --surface-primary: #FFFFFF;
+    --surface-secondary: #E9E8E1;
+    --surface-tertiary: #DFDED6;
+    --surface-hover: #F8F8F5;
+
+    /* Sidebar - Technical Deep Charcoal */
+    --sidebar-bg: #20251F;
+    --sidebar-surface: #272D26;
+    --sidebar-border: #2F362E;
+    --sidebar-text: #F5F5EF;
+    --sidebar-text-muted: #8E958B;
+    --sidebar-active-bg: rgba(240, 120, 53, 0.14);
+    --sidebar-active-border: #F07835;
+
+    /* Typography Colors */
+    --text-primary: #20251F;
+    --text-secondary: #575D54;
+    --text-muted: #777D75;
+    --text-light: #9B9E96;
+
+    /* Accents */
+    --accent-primary: #F07835;            /* Industrial Roadwork Orange */
+    --accent-primary-hover: #D86321;
+    --accent-primary-subtle: rgba(240, 120, 53, 0.09);
+    --accent-secondary: #B8D94A;          /* Precision Radar Lime */
+    --accent-secondary-subtle: rgba(184, 217, 74, 0.14);
+
+    /* Severity Colors (Road Distress Tiers) */
+    --sev-critical: #D94738;              /* Urgent structural crater */
+    --sev-critical-subtle: rgba(217, 71, 56, 0.10);
+    --sev-high: #E97932;                  /* Base fatigue / alligator */
+    --sev-high-subtle: rgba(233, 121, 50, 0.10);
+    --sev-moderate: #E4B83F;              /* Transverse / thermal crack */
+    --sev-moderate-subtle: rgba(228, 184, 63, 0.12);
+    --sev-low: #3B966A;                   /* Superficial hairline fissure */
+    --sev-low-subtle: rgba(59, 150, 106, 0.10);
+
+    /* Borders & Dividers */
+    --border-color: #DEDED5;
+    --border-strong: #C8C8BE;
+    --border-subtle: #EAEAE2;
+
+    /* Shadows (Subtle, Restrained Engineering Depth) */
+    --shadow-xs: 0 1px 2px rgba(32, 37, 31, 0.04);
+    --shadow-sm: 0 2px 6px rgba(32, 37, 31, 0.05);
+    --shadow-md: 0 6px 16px rgba(32, 37, 31, 0.06);
+    --shadow-lg: 0 14px 34px rgba(32, 37, 31, 0.08);
+
+    /* Border Radii */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-full: 9999px;
+
+    /* Typography Families */
+    --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Layout Dimensions */
+    --sidebar-width: 268px;
+    --sidebar-collapsed-width: 76px;
+    --topbar-height: 64px;
+}
+
+/* Base Reset & Box Sizing */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 15px;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.55;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* Typography Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+h1 { font-size: 2.15rem; }
+h2 { font-size: 1.65rem; }
+h3 { font-size: 1.3rem; }
+h4 { font-size: 1.05rem; }
+
+p {
+    color: var(--text-secondary);
+    font-size: 0.94rem;
+}
+
+small, .text-sm {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.text-xs {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.font-mono {
+    font-family: var(--font-mono);
+}
+
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+/* Accent Utilities */
+.text-orange { color: var(--accent-primary); }
+.text-lime { color: #5a7d0c; }
+.text-critical { color: var(--sev-critical); }
+.text-high { color: var(--sev-high); }
+.text-moderate { color: var(--sev-moderate); }
+.text-low { color: var(--sev-low); }
+
+/* Common Helper Classes */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+.gap-6 { gap: 1.5rem; }
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 0.65rem 1.15rem;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-primary {
+    background-color: var(--accent-primary);
+    color: #FFFFFF;
+    border-color: var(--accent-primary);
+    box-shadow: 0 2px 6px rgba(240, 120, 53, 0.25);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-primary-hover);
+    border-color: var(--accent-primary-hover);
+    box-shadow: 0 4px 12px rgba(240, 120, 53, 0.32);
+}
+
+.btn-secondary {
+    background-color: var(--surface-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-xs);
+}
+
+.btn-secondary:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+}
+
+.btn-outline:hover {
+    background-color: var(--surface-secondary);
+}
+
+.btn-dark {
+    background-color: var(--sidebar-bg);
+    color: #FFFFFF;
+    border-color: var(--sidebar-bg);
+}
+
+.btn-dark:hover {
+    background-color: #2F362E;
+}
+
+.btn-danger {
+    background-color: var(--sev-critical);
+    color: #FFFFFF;
+    border-color: var(--sev-critical);
+}
+
+.btn-danger:hover {
+    background-color: #BD3527;
+}
+
+.btn-sm {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+}
+
+.btn-lg {
+    padding: 0.85rem 1.6rem;
+    font-size: 1rem;
+    border-radius: var(--radius-md);
+}
+
+.btn:disabled, .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+    box-shadow: none !important;
+}
+
+/* Badges & Tags */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    background-color: var(--surface-secondary);
+    color: var(--text-secondary);
+}
+
+.badge-critical {
+    background-color: var(--sev-critical-subtle);
+    color: var(--sev-critical);
+    border-color: rgba(217, 71, 56, 0.3);
+}
+
+.badge-high {
+    background-color: var(--sev-high-subtle);
+    color: var(--sev-high);
+    border-color: rgba(233, 121, 50, 0.3);
+}
+
+.badge-moderate {
+    background-color: var(--sev-moderate-subtle);
+    color: #9A7712;
+    border-color: rgba(228, 184, 63, 0.35);
+}
+
+.badge-low {
+    background-color: var(--sev-low-subtle);
+    color: var(--sev-low);
+    border-color: rgba(59, 150, 106, 0.3);
+}
+
+.badge-orange {
+    background-color: var(--accent-primary-subtle);
+    color: var(--accent-primary);
+    border-color: rgba(240, 120, 53, 0.3);
+}
+
+.badge-lime {
+    background-color: var(--accent-secondary-subtle);
+    color: #4A6305;
+    border-color: rgba(184, 217, 74, 0.4);
+}
+
+.badge-dark {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    border-color: var(--sidebar-border);
+}
+
+/* Inline SVG Icon standard size */
+.icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    stroke-width: 2;
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.icon-sm {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.icon-lg {
+    width: 1.4rem;
+    height: 1.4rem;
+}

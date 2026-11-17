@@ -1,152 +1,225 @@
 {% extends "base.html" %}
 
-{% block title %}Inspection Results | {{ analysis.id }} | ROADGUARD AI{% endblock %}
+{% block title %}Inspection Report &bull; {{ analysis.id }} &bull; ROADGUARD AI{% endblock %}
+{% block breadcrumb %}INSPECTION REPORT &bull; {{ analysis.id }}{% endblock %}
 
 {% block content %}
-<div class="card-header" style="margin-bottom: 2rem;">
+<!-- Inspection Header -->
+<div class="page-header">
     <div>
-        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
-            <h1 style="font-size: 1.75rem; font-weight: 800;">Inspection Report: {{ analysis.id }}</h1>
-            <span class="badge" style="background: var(--bg-elevated); color: var(--accent-cyan); border: 1px solid var(--border-subtle);">
-                {{ analysis.media_type|upper }}
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+            <h1 class="page-header-title">Inspection: {{ analysis.id }}</h1>
+            <span class="badge {% if analysis.media_type == 'video' %}badge-orange{% else %}badge-dark{% endif %}">
+                {{ analysis.media_type|upper }} MEDIA
             </span>
+            {% if analysis.is_demo %}
+            <span class="badge" style="background: rgba(240, 120, 53, 0.15); color: var(--accent-primary);">DEMONSTRATION RECORD</span>
+            {% endif %}
         </div>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">
-            Source: <strong>{{ analysis.filename }}</strong> &bull; Inspected: {{ analysis.created_at|datetime_format }}
+        <p class="page-header-sub">
+            Source File: <strong>{{ analysis.filename }}</strong> &bull; Recorded: <span class="font-mono">{{ analysis.created_at|datetime_format }}</span>
         </p>
     </div>
-    <div style="display: flex; gap: 0.75rem;">
-        <a href="/api/reports/download/{{ analysis.id }}/pdf" class="btn btn-primary btn-sm">📄 Download PDF Report</a>
-        <a href="/api/reports/download/{{ analysis.id }}/csv" class="btn btn-secondary btn-sm">📊 Download CSV Registry</a>
+    <div class="page-header-actions">
+        <a href="/api/reports/download/{{ analysis.id }}/pdf" class="btn btn-primary btn-sm">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <span>Download PDF Report</span>
+        </a>
+        <a href="/api/reports/download/{{ analysis.id }}/csv" class="btn btn-secondary btn-sm">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+            <span>Download CSV Registry</span>
+        </a>
     </div>
 </div>
 
-<!-- KPI Metric Cards -->
-<section class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-title">Defects Identified</span>
-            <span class="stat-icon">🔍</span>
+<!-- KPI Summary Strip -->
+<section class="kpi-grid">
+    <div class="kpi-card kpi-hero">
+        <div class="kpi-header">
+            <span class="kpi-label">UNIQUE DEFECTS</span>
+            <span class="badge badge-orange">TRACKED</span>
         </div>
-        <div class="stat-value">{{ analysis.unique_defects or analysis.total_defects or 0 }}</div>
-        <div class="stat-footer">Unique defects tracked</div>
+        <div class="kpi-value">{{ analysis.unique_defects or analysis.total_defects or 0 }}</div>
+        <div class="kpi-footer">
+            <span>Total frame detections: {{ analysis.total_defects or 0 }}</span>
+        </div>
     </div>
 
-    <div class="stat-card {% if analysis.max_severity_level == 'CRITICAL' %}critical{% elif analysis.max_severity_level == 'HIGH' %}high{% elif analysis.max_severity_level == 'MODERATE' %}moderate{% else %}low{% endif %}">
-        <div class="stat-header">
-            <span class="stat-title">Peak Severity Risk</span>
-            <span class="stat-icon">⚠️</span>
+    <div class="kpi-card {% if analysis.max_severity_level == 'CRITICAL' %}kpi-critical{% elif analysis.max_severity_level == 'HIGH' %}kpi-high{% elif analysis.max_severity_level == 'MODERATE' %}kpi-moderate{% else %}kpi-low{% endif %}">
+        <div class="kpi-header">
+            <span class="kpi-label">PEAK RISK TIER</span>
+            {% if analysis.max_severity_level == 'CRITICAL' %}
+                <span class="badge badge-critical">CRITICAL</span>
+            {% elif analysis.max_severity_level == 'HIGH' %}
+                <span class="badge badge-high">HIGH</span>
+            {% elif analysis.max_severity_level == 'MODERATE' %}
+                <span class="badge badge-moderate">MODERATE</span>
+            {% else %}
+                <span class="badge badge-low">LOW</span>
+            {% endif %}
         </div>
-        <div class="stat-value" style="color: {% if analysis.max_severity_level == 'CRITICAL' %}var(--sev-critical){% elif analysis.max_severity_level == 'HIGH' %}var(--sev-high){% elif analysis.max_severity_level == 'MODERATE' %}var(--sev-moderate){% else %}var(--sev-low){% endif %};">
-            {{ analysis.max_severity_level }}
+        <div class="kpi-value">
+            {{ "%.1f"|format(analysis.max_severity_score or 0.0) }}<span style="font-size: 1.15rem; color: var(--text-muted); font-weight: 500;">/100</span>
         </div>
-        <div class="stat-footer">Visual Score: {{ "%.1f"|format(analysis.max_severity_score or 0.0) }} / 100</div>
+        <div class="kpi-footer">
+            <span>Visual Pavement Hazard Index</span>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-title">Average Confidence</span>
-            <span class="stat-icon">🎯</span>
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">AVG CONFIDENCE</span>
+            <span class="badge">PRECISION</span>
         </div>
-        <div class="stat-value">{{ "%.1f"|format((analysis.avg_confidence or 0.0) * 100) }}%</div>
-        <div class="stat-footer">Model classification certainty</div>
+        <div class="kpi-value font-mono">
+            {{ "%.1f"|format((analysis.avg_confidence or 0.0) * 100) }}%
+        </div>
+        <div class="kpi-footer">
+            <span>Model classification score</span>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-header">
-            <span class="stat-title">Processing Duration</span>
-            <span class="stat-icon">⏱️</span>
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">CONFIRMED TRACKS</span>
+            <span class="badge badge-lime">&ge; 2 FRAMES</span>
         </div>
-        <div class="stat-value">{{ "%.2f"|format(analysis.processing_time_sec or 0.0) }}s</div>
-        <div class="stat-footer">Hardware inference time</div>
+        <div class="kpi-value font-mono">
+            {{ (analysis.unique_defects or analysis.total_defects or 0) - (analysis.transient_defects or 0) }}
+        </div>
+        <div class="kpi-footer">
+            <span>Persistent defect observations</span>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-label">PROCESSING TIME</span>
+            <span class="badge">LATENCY</span>
+        </div>
+        <div class="kpi-value font-mono">
+            {{ "%.2f"|format(analysis.processing_time_sec or 0.0) }}s
+        </div>
+        <div class="kpi-footer">
+            <span>Execution duration</span>
+        </div>
     </div>
 </section>
 
-<!-- Media Viewer & Distribution Grid -->
-<div class="dashboard-grid">
-    <!-- Annotated Media Player / Viewer -->
-    <div class="panel-card">
+<!-- Media Viewport and Severity Breakdown -->
+<div class="studio-grid" style="grid-template-columns: 1.35fr 0.65fr;">
+    <!-- Media Viewer -->
+    <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Annotated Media Inspection</h3>
+            <h3 class="card-title">Annotated Inspection Media</h3>
             {% if analysis.output_path %}
-            <a href="{{ analysis.output_path }}" class="btn btn-secondary btn-sm" download>Save Media</a>
+            <a href="{{ analysis.output_path }}" class="btn btn-secondary btn-sm" download>
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download Media</span>
+            </a>
             {% endif %}
         </div>
-
-        <div class="preview-box">
+        <div style="background-color: #121512; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 420px; border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
             {% if analysis.media_type == 'video' %}
-            <video src="{{ analysis.output_path }}" controls autoplay style="width: 100%; border-radius: var(--radius-md);"></video>
+            <video src="{{ analysis.output_path }}" controls autoplay style="max-width: 100%; max-height: 520px; border-radius: var(--radius-sm);"></video>
             {% else %}
-            <img src="{{ analysis.output_path }}" alt="Annotated Road Damage" style="width: 100%; border-radius: var(--radius-md);">
+            <img src="{{ analysis.output_path }}" alt="Annotated Road Defect" style="max-width: 100%; max-height: 520px; border-radius: var(--radius-sm); object-fit: contain;">
             {% endif %}
         </div>
     </div>
 
-    <!-- Severity & Class Distribution Summary -->
-    <div class="panel-card">
+    <!-- Severity Distribution Breakdown -->
+    <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Inspection Summary Breakdown</h3>
+            <h3 class="card-title">Hazard Severity Tiers</h3>
+            <span class="badge badge-orange">ALLOCATION</span>
         </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; background: var(--sev-critical-subtle); border-radius: var(--radius-sm); border-left: 4px solid var(--sev-critical);">
+                <div>
+                    <div style="font-weight: 700; color: var(--sev-critical);">CRITICAL (80 - 100)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Urgent rim/tyre damage risk</div>
+                </div>
+                <strong class="font-mono text-critical" style="font-size: 1.25rem;">{{ analysis.critical_count or 0 }}</strong>
+            </div>
 
-        <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Severity Distribution:</h4>
-        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-critical);">
-                <span>CRITICAL</span>
-                <strong style="color: var(--sev-critical);">{{ analysis.critical_count or 0 }}</strong>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; background: var(--sev-high-subtle); border-radius: var(--radius-sm); border-left: 4px solid var(--sev-high);">
+                <div>
+                    <div style="font-weight: 700; color: var(--sev-high);">HIGH (60 - 79.9)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Severe structural road cracking</div>
+                </div>
+                <strong class="font-mono text-high" style="font-size: 1.25rem;">{{ analysis.high_count or 0 }}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-high);">
-                <span>HIGH</span>
-                <strong style="color: var(--sev-high);">{{ analysis.high_count or 0 }}</strong>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; background: var(--sev-moderate-subtle); border-radius: var(--radius-sm); border-left: 4px solid var(--sev-moderate);">
+                <div>
+                    <div style="font-weight: 700; color: #9A7712;">MODERATE (30 - 59.9)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Transverse & thermal joints</div>
+                </div>
+                <strong class="font-mono" style="font-size: 1.25rem; color: #9A7712;">{{ analysis.moderate_count or 0 }}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-moderate);">
-                <span>MODERATE</span>
-                <strong style="color: var(--sev-moderate);">{{ analysis.moderate_count or 0 }}</strong>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; background: var(--sev-low-subtle); border-radius: var(--radius-sm); border-left: 4px solid var(--sev-low);">
+                <div>
+                    <div style="font-weight: 700; color: var(--sev-low);">LOW (5 - 29.9)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Early longitudinal fissures</div>
+                </div>
+                <strong class="font-mono text-low" style="font-size: 1.25rem;">{{ analysis.low_count or 0 }}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-elevated); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border-left: 3px solid var(--sev-low);">
-                <span>LOW</span>
-                <strong style="color: var(--sev-low);">{{ analysis.low_count or 0 }}</strong>
+
+            <div style="margin-top: 0.75rem; padding: 0.75rem; background: var(--surface-secondary); border-radius: var(--radius-sm); font-size: 0.78rem; color: var(--text-muted); line-height: 1.45;">
+                <strong>Empirical Severity Methodology:</strong>
+                Calculated dynamically via \(S = \min(100, \max(5, W_{cat} + W_{area} + W_{pos} + W_{geom} + \Delta_{pers}))\).
             </div>
         </div>
-
-        <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Methodology Disclaimer:</h4>
-        <p style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
-            Severity levels are empirical visual risk estimates computed from 2D visible damaged area, category hazard, lane perspective proximity, and temporal persistence. Physical defect depth in millimeters requires calibrated 3D stereo geometry or LiDAR profiling.
-        </p>
     </div>
 </div>
 
-<!-- Detailed Defect Table -->
-<section class="panel-card" style="margin-top: 1.5rem;">
+<!-- ========================================================================
+     DETECTION REGISTER TABLE
+     ======================================================================== -->
+<section class="card">
     <div class="card-header">
-        <h3 class="card-title">Defect Registry & Assessment Rationale</h3>
-        <span class="badge badge-low">{{ detections|length }} Detections</span>
+        <div>
+            <h3 class="card-title">Detection Register</h3>
+            <span class="card-subtitle">{{ detections|length }} unique defect observations logged in registry</span>
+        </div>
+        <a href="/api/reports/download/{{ analysis.id }}/csv" class="btn btn-secondary btn-sm">Export Registry (CSV)</a>
     </div>
 
-    <div class="table-responsive">
+    <div class="table-container" style="border: none; border-radius: 0; box-shadow: none;">
         {% if detections and detections|length > 0 %}
-        <table class="custom-table">
+        <table class="data-table">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Track ID</th>
-                    <th>Category</th>
+                    <th>Track / Item ID</th>
+                    <th>Defect Classification</th>
                     <th>Confidence</th>
-                    <th>Severity Level</th>
-                    <th>Severity Score</th>
-                    <th>Assessment Justification</th>
+                    <th>Raw Score</th>
+                    <th>Adjusted Score</th>
+                    <th>Risk Tier</th>
+                    <th>Confirmation</th>
+                    <th>Engineering Assessment Rationale</th>
                 </tr>
             </thead>
             <tbody>
                 {% for d in detections %}
                 <tr>
-                    <td>{{ loop.index }}</td>
-                    <td><strong>{{ d.track_id or '-' }}</strong></td>
-                    <td>
-                        <span class="badge" style="background: var(--bg-elevated); color: var(--text-primary);">
-                            {{ d.class_name }} ({{ d.class_code }})
-                        </span>
+                    <td class="font-mono text-sm">
+                        {% if d.track_id is not none %}#{{ d.track_id }}{% else %}#{{ loop.index }}{% endif %}
                     </td>
-                    <td>{{ "%.1f"|format(d.confidence * 100) }}%</td>
+                    <td>
+                        <strong class="font-mono">{{ d.class_code }}</strong> &bull; {{ d.class_name }}
+                    </td>
+                    <td class="font-mono text-sm">
+                        {{ "%.1f"|format((d.confidence or 0.0) * 100) }}%
+                    </td>
+                    <td class="font-mono text-sm">
+                        {{ "%.1f"|format(d.severity_score or 0.0) }}
+                    </td>
+                    <td class="font-mono text-sm" style="font-weight: 700;">
+                        {{ "%.1f"|format(d.adjusted_score or d.severity_score or 0.0) }}
+                    </td>
                     <td>
                         {% if d.severity_level == 'CRITICAL' %}
                             <span class="badge badge-critical">CRITICAL</span>
@@ -158,15 +231,27 @@
                             <span class="badge badge-low">LOW</span>
                         {% endif %}
                     </td>
-                    <td><strong>{{ "%.1f"|format(d.severity_score) }}</strong> / 100</td>
-                    <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ d.reason }}</td>
+                    <td>
+                        {% if d.is_confirmed %}
+                            <span class="badge badge-lime">CONFIRMED</span>
+                        {% else %}
+                            <span class="badge">TRANSIENT</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-sm" style="max-width: 320px; line-height: 1.4; color: var(--text-secondary);">
+                        {{ d.reason or "Pavement distress detected within road lane corridor." }}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
         <div class="empty-state">
-            <p>No defects identified in this media record.</p>
+            <div class="empty-state-icon">
+                <svg class="icon icon-lg" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <div class="empty-state-title">Clean Roadway Condition</div>
+            <div class="empty-state-desc">No structural potholes or cracks exceeded the specified detection threshold in this inspection.</div>
         </div>
         {% endif %}
     </div>

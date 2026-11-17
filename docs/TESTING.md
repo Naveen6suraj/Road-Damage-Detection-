@@ -1,5 +1,5 @@
 # ROADGUARD AI: Quality Assurance & Testing Protocol
-Version: 2.1.1 (Audited Release)
+Version: 3.0.0 (Field Intelligence Release)
 
 ## 1. Automated Test Suite Overview
 
@@ -11,7 +11,7 @@ ROADGUARD AI includes a comprehensive, multi-layer automated test suite implemen
 - **`tests/test_detector.py`**: Detector initialization, hardware accelerator reporting (RTX GPU CUDA vs CPU), strict custom model validation (rejection of generic COCO, rejection of partially compatible models missing required classes, rejection of incompatible mappings), class name normalization, and synthetic frame inference.
 - **`tests/test_video.py`**: Video metadata extraction, OpenCV `VideoCapture` and `VideoWriter` resource lifecycle, frame-stride sampling, and corrupt video error handling.
 - **`tests/test_reports.py`**: ReportLab PDF generation with Status and Raw/Adjusted severity scores, table formatting, and CSV defect registry compilation.
-- **`tests/test_routes.py`**: Flask application factory, HTTP status codes, JSON response schemas, file size and extension validation, model availability 503 rejection, `/api/model/status` endpoint, directory traversal protection (`/outputs/../`, `/reports/../../`), safe analysis ID regex enforcement, production secret key requirement, legacy `/predict_image` route compatibility, and 404 error handler.
+- **`tests/test_routes.py`**: Flask application factory, HTTP status codes, JSON response schemas, file size and extension validation, model availability 503 rejection, `/api/model/status` endpoint, directory traversal protection (`/outputs/../`, `/reports/../../`), safe analysis ID regex enforcement, production secret key requirement, legacy `/predict_image` route compatibility, 404 error handler, inspection history (`/history`), executive reports (`/reports`), and atomic analysis deletion (`DELETE /api/analyses/<id>`).
 
 ---
 
@@ -38,41 +38,44 @@ tests/test_detector.py::test_accept_complete_valid_road_damage_model PASSED [ 14
 tests/test_detector.py::test_detection_on_synthetic_frame PASSED         [ 16%]
 tests/test_reports.py::test_generate_csv_report PASSED                   [ 19%]
 tests/test_reports.py::test_generate_pdf_report PASSED                   [ 21%]
-tests/test_routes.py::test_index_page PASSED                             [ 23%]
-tests/test_routes.py::test_dashboard_page PASSED                         [ 26%]
-tests/test_routes.py::test_analysis_page PASSED                          [ 28%]
-tests/test_routes.py::test_api_dashboard_stats PASSED                    [ 30%]
-tests/test_routes.py::test_api_system_status PASSED                      [ 33%]
-tests/test_routes.py::test_image_upload_without_file PASSED              [ 35%]
-tests/test_routes.py::test_image_upload_invalid_extension PASSED         [ 38%]
-tests/test_routes.py::test_api_model_status PASSED                       [ 40%]
-tests/test_routes.py::test_image_upload_missing_custom_model PASSED      [ 42%]
-tests/test_routes.py::test_video_upload_missing_custom_model PASSED      [ 45%]
-tests/test_routes.py::test_image_upload_valid_synthetic PASSED           [ 47%]
-tests/test_routes.py::test_legacy_predict_image_route PASSED             [ 50%]
-tests/test_routes.py::test_camera_process_frame_missing_payload PASSED   [ 52%]
-tests/test_routes.py::test_404_handler PASSED                            [ 54%]
-tests/test_routes.py::test_security_path_traversal_protection PASSED     [ 57%]
-tests/test_routes.py::test_security_invalid_analysis_id PASSED           [ 59%]
-tests/test_routes.py::test_security_production_secret_key_enforcement PASSED [ 61%]
-tests/test_severity.py::test_classify_severity_score PASSED              [ 64%]
-tests/test_severity.py::test_estimate_severity_critical_pothole PASSED   [ 66%]
-tests/test_severity.py::test_estimate_severity_minor_crack PASSED        [ 69%]
-tests/test_severity.py::test_estimate_severity_moderate_transverse_crack PASSED [ 71%]
-tests/test_severity.py::test_severity_persistence_context PASSED         [ 73%]
-tests/test_severity.py::test_zero_dimensions_edge_case PASSED            [ 76%]
-tests/test_severity.py::test_out_of_bounds_and_inverted_bbox PASSED      [ 78%]
-tests/test_severity.py::test_raw_and_adjusted_severity_distinction PASSED [ 80%]
-tests/test_tracker.py::test_compute_iou PASSED                           [ 83%]
-tests/test_tracker.py::test_tracker_association_across_frames PASSED     [ 85%]
+tests/test_routes.py::test_index_page PASSED                             [ 22%]
+tests/test_routes.py::test_dashboard_page PASSED                         [ 24%]
+tests/test_routes.py::test_analysis_page PASSED                          [ 26%]
+tests/test_routes.py::test_history_page PASSED                           [ 28%]
+tests/test_routes.py::test_reports_page PASSED                           [ 31%]
+tests/test_routes.py::test_api_delete_analysis_not_found PASSED          [ 33%]
+tests/test_routes.py::test_api_dashboard_stats PASSED                    [ 35%]
+tests/test_routes.py::test_api_system_status PASSED                      [ 37%]
+tests/test_routes.py::test_image_upload_without_file PASSED              [ 40%]
+tests/test_routes.py::test_image_upload_invalid_extension PASSED         [ 42%]
+tests/test_routes.py::test_api_model_status PASSED                       [ 44%]
+tests/test_routes.py::test_image_upload_missing_custom_model PASSED      [ 46%]
+tests/test_routes.py::test_video_upload_missing_custom_model PASSED      [ 48%]
+tests/test_routes.py::test_image_upload_valid_synthetic PASSED           [ 51%]
+tests/test_routes.py::test_legacy_predict_image_route PASSED             [ 53%]
+tests/test_routes.py::test_camera_process_frame_missing_payload PASSED   [ 55%]
+tests/test_routes.py::test_404_handler PASSED                            [ 57%]
+tests/test_routes.py::test_security_path_traversal_protection PASSED     [ 60%]
+tests/test_routes.py::test_security_invalid_analysis_id PASSED           [ 62%]
+tests/test_routes.py::test_security_production_secret_key_enforcement PASSED [ 64%]
+tests/test_severity.py::test_classify_severity_score PASSED              [ 66%]
+tests/test_severity.py::test_estimate_severity_critical_pothole PASSED   [ 68%]
+tests/test_severity.py::test_estimate_severity_minor_crack PASSED        [ 71%]
+tests/test_severity.py::test_estimate_severity_moderate_transverse_crack PASSED [ 73%]
+tests/test_severity.py::test_severity_persistence_context PASSED         [ 75%]
+tests/test_severity.py::test_zero_dimensions_edge_case PASSED            [ 77%]
+tests/test_severity.py::test_out_of_bounds_and_inverted_bbox PASSED      [ 80%]
+tests/test_severity.py::test_raw_and_adjusted_severity_distinction PASSED [ 82%]
+tests/test_tracker.py::test_compute_iou PASSED                           [ 84%]
+tests/test_tracker.py::test_tracker_association_across_frames PASSED     [ 86%]
 tests/test_tracker.py::test_tracker_deduplication PASSED                 [ 88%]
-tests/test_tracker.py::test_tracker_transient_vs_confirmed PASSED        [ 90%]
-tests/test_tracker.py::test_tracker_different_classes_no_association PASSED [ 92%]
+tests/test_tracker.py::test_tracker_transient_vs_confirmed PASSED        [ 91%]
+tests/test_tracker.py::test_tracker_different_classes_no_association PASSED [ 93%]
 tests/test_video.py::test_get_video_metadata PASSED                      [ 95%]
 tests/test_video.py::test_video_processor_pipeline PASSED                [ 97%]
 tests/test_video.py::test_corrupt_video_handling PASSED                  [100%]
 
-============================= 42 passed in 5.84s ==============================
+============================= 45 passed in 4.67s ==============================
 ```
 
 ---

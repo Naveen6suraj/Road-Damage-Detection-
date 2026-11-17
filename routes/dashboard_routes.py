@@ -76,6 +76,41 @@ def results_view(analysis_id):
     )
 
 
+@dashboard_bp.route("/history")
+def history_view():
+    """Dedicated inspection history archive."""
+    analyses = database.get_all_analyses(limit=100)
+    sys_status = get_detector().get_status()
+    return render_template(
+        "history.html",
+        analyses=analyses,
+        sys_status=sys_status,
+        app_name=config.APP_NAME
+    )
+
+
+@dashboard_bp.route("/reports")
+def reports_view():
+    """Dedicated inspection reports management portal."""
+    analyses = database.get_all_analyses(limit=100)
+    sys_status = get_detector().get_status()
+    return render_template(
+        "reports.html",
+        analyses=analyses,
+        sys_status=sys_status,
+        app_name=config.APP_NAME
+    )
+
+
+@dashboard_bp.route("/api/analyses/<analysis_id>", methods=["DELETE"])
+def api_delete_analysis(analysis_id):
+    """Delete an analysis session from the registry."""
+    success = database.delete_analysis(analysis_id)
+    if success:
+        return jsonify({"success": True, "message": f"Analysis {analysis_id} deleted."})
+    return jsonify({"success": False, "error": "Analysis ID not found"}), 404
+
+
 @dashboard_bp.route("/api/dashboard/stats")
 def api_dashboard_stats():
     """Return JSON metrics for dashboard charts and counters."""

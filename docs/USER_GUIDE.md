@@ -1,10 +1,11 @@
 # ROADGUARD AI: Comprehensive User & Demonstration Guide
+Version: 3.0.0 (Field Intelligence Release)
 
 ## 1. System Requirements & Setup
 
 ### Hardware:
 - **Processor**: Intel Core i5 / AMD Ryzen 5 or better.
-- **GPU (Recommended)**: NVIDIA GeForce RTX GPU (e.g. RTX 3050 Laptop GPU 4GB) with CUDA support.
+- **GPU (Recommended)**: NVIDIA GeForce RTX GPU (e.g. RTX 3050 Laptop GPU 4GB) with CUDA support. Transparent CPU fallback is supported.
 - **RAM**: 8 GB minimum (16 GB recommended).
 - **Disk**: 1 GB free storage.
 
@@ -33,8 +34,8 @@ python app.py
 Console startup banner:
 ```text
 ============================================================
-  ROADGUARD AI v2.0.0
-  Intelligent Road Damage Detection & Severity Assessment
+  ROADGUARD AI v3.0.0
+  FIELD INTELLIGENCE — Road Damage & Severity Platform
   Hardware: NVIDIA GeForce RTX 3050 Laptop GPU (CUDA=True)
   Listening at: http://127.0.0.1:5000
 ============================================================
@@ -45,18 +46,32 @@ Open your browser and navigate to:
 
 ---
 
-## 3. Academic Evaluation Demonstration Protocol
+## 3. Navigation & Interface Architecture
+
+ROADGUARD AI v3.0 introduces an industrial **Field Intelligence** interface structured around ergonomic vertical sidebar navigation:
+- **OVERVIEW**: Command Center (`/`) — High-impact split-hero workstation with live roadway HUD simulation preview, hardware telemetry strip, asymmetric KPI metrics, and recent inspections.
+- **INSPECTION**: Analysis Studio (`/analysis`) — 3-mode workstation for Road Image, Dashcam Video, and WebRTC Camera feeds.
+- **INTELLIGENCE**:
+  - Road Intelligence (`/dashboard`) — Aggregate pavement metrics, RDD2022 distress specifications table with base weights ($W_{cat}$) and SLAs, and Chart.js visualizations.
+  - Inspection History (`/history`) — Filterable registry with live client-side search, media filter, severity tier filter, and record deletion.
+  - Report Management (`/reports`) — Centralized document hub with metadata cards (ReportLab PDF Flowables, RFC 4180 CSV, Seki Lab Standard) and export actions.
+- **SYSTEM**: Hardware Diagnostics Modal with real-time PyTorch accelerator telemetry and device runtime metrics.
+
+---
+
+## 4. Academic Evaluation Demonstration Protocol
 
 Follow this exact sequence to conduct a demonstration for reviewers or evaluators:
 
-### Step 1: Open the Dashboard Overview
+### Step 1: Open the Command Center
 - Navigate to `http://127.0.0.1:5000/`.
-- Review the **Real-Time KPI Cards** (Total Analyses, Tracked Defects, Critical, High, Moderate, Low).
-- Observe the **Hardware Accelerator Badge** (`GPU: RTX 3050 (CUDA)`) confirming active GPU acceleration.
-- Point out the **Damage Category Breakdown** and **Severity Risk Distribution** charts powered by Chart.js.
+- Review the **Editorial Split-Hero**: active roadway HUD bounding box simulation viewport.
+- Observe the **Hardware Readiness Strip** (`CUDA 12.4 ACTIVE • YOLO11 NANO`) confirming GPU acceleration.
+- Point out the **Asymmetric KPI Tiles** (Deduplicated Defects, Critical Hazards, High Severity, Moderate, and Low).
+- Review the **Damage Composition Breakdown** and **Severity Risk Ratio** bars.
 
 ### Step 2: Road Image Detection & Severity Assessment
-- Click on **Analysis Studio** in the top navigation bar (`/analysis`).
+- Click on **Analysis Studio** in the sidebar (`/analysis`).
 - Ensure the **📸 Road Image Analysis** tab is selected.
 - Drag & drop or click to select a road photo (`.jpg` or `.png`).
 - Adjust the **Confidence Threshold Slider** (e.g. 25% or 30%).
@@ -100,7 +115,6 @@ Follow this exact sequence to conduct a demonstration for reviewers or evaluator
 - Show live frames streaming to the backend YOLO detector with low-latency overlays, live FPS counter, and real-time hazard severity badges.
 - Click **⏹ Stop Camera** to safely release the camera device.
 
-### Step 7: Historical Inspection Records
-- Navigate to **Dashboard** (`/dashboard`).
-- View the updated **Inspection Records Database** table showing the newly completed image and video analyses.
-- Click **View** on any historical record to open its deep-dive results page (`/results/<id>`).
+### Step 7: Historical Inspection Registry & Reports Center
+- Navigate to **History** (`/history`) to demonstrate real-time search, filtering by media type or severity tier, and atomic deletion.
+- Navigate to **Reports** (`/reports`) to demonstrate centralized PDF Flowable and CSV compilation for municipal maintenance workflows.

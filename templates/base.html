@@ -3,74 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ROADGUARD AI | Pothole & Road Crack Severity Estimator{% endblock %}</title>
+    <title>{% block title %}ROADGUARD AI &bull; FIELD INTELLIGENCE{% endblock %}</title>
+    
+    <!-- Design System & Stylesheets -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Chart.js CDN for interactive visualizations -->
+    
+    <!-- Chart.js for Infrastructure Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
     {% block extra_head %}{% endblock %}
 </head>
-<body class="dark-theme">
-    <!-- Navigation Bar -->
-    <header class="navbar">
-        <div class="nav-container">
-            <a href="/" class="brand-link">
-                <div class="brand-icon">🛣️</div>
-                <div class="brand-text">
-                    <span class="brand-title">ROADGUARD <span class="accent-cyan">AI</span></span>
-                    <span class="brand-subtitle">Damage & Severity Assessment</span>
-                </div>
-            </a>
+<body>
+    <div class="app-container">
+        <!-- ====================================================================
+             VERTICAL SIDEBAR NAVIGATION
+             ==================================================================== -->
+        <aside class="sidebar" id="appSidebar">
+            <!-- Sidebar Header / Brand Mark -->
+            <div class="sidebar-header">
+                <a href="/" class="brand-wrapper">
+                    <div class="brand-mark" title="ROADGUARD AI">
+                        <!-- Highway Vector Mark -->
+                        <svg class="icon icon-lg" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.2">
+                            <path d="M4 19L9 5M20 19L15 5M12 7V9M12 13V15M12 19V21" />
+                        </svg>
+                    </div>
+                    <div class="brand-info">
+                        <span class="brand-name">ROADGUARD <span>AI</span></span>
+                        <span class="brand-descriptor">FIELD INTELLIGENCE</span>
+                    </div>
+                </a>
+                <span class="version-pill">v3.0</span>
+            </div>
 
-            <nav class="nav-links">
-                <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">Home</a>
-                <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">Dashboard</a>
-                <a href="/analysis" class="nav-item {% if request.path == '/analysis' %}active{% endif %}">Analysis Studio</a>
+            <!-- Navigation Groups -->
+            <nav class="sidebar-nav">
+                <!-- Group 1: OVERVIEW -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Overview</div>
+                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                        <div class="nav-link-content">
+                            <!-- Compass / Dashboard Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            <span class="nav-link-text">Command Center</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Group 2: INSPECTION -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Inspection</div>
+                    <a href="/analysis" class="nav-link {% if request.path == '/analysis' %}active{% endif %}">
+                        <div class="nav-link-content">
+                            <!-- Scan / Plus Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                            <span class="nav-link-text">New Inspection</span>
+                        </div>
+                        <span class="nav-badge text-orange">STUDIO</span>
+                    </a>
+                    <a href="/analysis#image" class="nav-link" onclick="if(window.location.pathname === '/analysis') { switchStudioTab('image'); }">
+                        <div class="nav-link-content">
+                            <!-- Image Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            <span class="nav-link-text">Image Analysis</span>
+                        </div>
+                    </a>
+                    <a href="/analysis#video" class="nav-link" onclick="if(window.location.pathname === '/analysis') { switchStudioTab('video'); }">
+                        <div class="nav-link-content">
+                            <!-- Video Film Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+                            <span class="nav-link-text">Dashcam Video</span>
+                        </div>
+                    </a>
+                    <a href="/analysis#camera" class="nav-link" onclick="if(window.location.pathname === '/analysis') { switchStudioTab('camera'); }">
+                        <div class="nav-link-content">
+                            <!-- Live Camera Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <span class="nav-link-text">Live Camera Feed</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Group 3: INTELLIGENCE -->
+                <div class="nav-group">
+                    <div class="nav-group-title">Intelligence</div>
+                    <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+                        <div class="nav-link-content">
+                            <!-- Bar Chart Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            <span class="nav-link-text">Analytics</span>
+                        </div>
+                    </a>
+                    <a href="/history" class="nav-link {% if request.path == '/history' %}active{% endif %}">
+                        <div class="nav-link-content">
+                            <!-- History Clock Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            <span class="nav-link-text">Inspection History</span>
+                        </div>
+                    </a>
+                    <a href="/reports" class="nav-link {% if request.path == '/reports' %}active{% endif %}">
+                        <div class="nav-link-content">
+                            <!-- File Text Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span class="nav-link-text">Reports</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Group 4: SYSTEM -->
+                <div class="nav-group">
+                    <div class="nav-group-title">System</div>
+                    <a href="javascript:void(0)" class="nav-link" onclick="openSystemModal()">
+                        <div class="nav-link-content">
+                            <!-- Chip / Model Status Icon -->
+                            <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                            <span class="nav-link-text">Model & Hardware</span>
+                        </div>
+                        <span class="dot-indicator {% if sys_status and sys_status.inference_enabled %}online{% else %}offline{% endif %}"></span>
+                    </a>
+                </div>
             </nav>
 
-                <div class="status-badge" id="systemStatusBadge" title="Inference Hardware Accelerator">
-                    <span class="status-dot online"></span>
-                    <span class="status-text">
-                        {% if sys_status and sys_status.cuda_available %}
-                            GPU: RTX 3050 (CUDA)
-                        {% else %}
-                            CPU Accelerated
-                        {% endif %}
-                    </span>
+            <!-- Sidebar Footer Hardware Telemetry -->
+            <div class="sidebar-footer">
+                <div class="telemetry-card">
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">COMPUTE ENGINE</span>
+                        <span class="telemetry-val">
+                            <span class="dot-indicator {% if sys_status and sys_status.cuda_available %}online{% else %}online{% endif %}"></span>
+                            {% if sys_status and sys_status.cuda_available %}RTX 3050{% else %}CPU HOST{% endif %}
+                        </span>
+                    </div>
+                    <div class="telemetry-row">
+                        <span class="telemetry-label">YOLO MODEL</span>
+                        <span class="telemetry-val" style="color: {% if sys_status and sys_status.inference_enabled %}var(--accent-secondary){% else %}var(--sev-moderate){% endif %};">
+                            {% if sys_status and sys_status.inference_enabled %}
+                                READY
+                            {% else %}
+                                AWAITING BEST.PT
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
-                <div class="status-badge" id="modelStatusBadge" title="YOLO Road Damage Model Status">
+            </div>
+        </aside>
+
+        <!-- ====================================================================
+             MAIN WRAPPER & TOP UTILITY BAR
+             ==================================================================== -->
+        <div class="main-wrapper" id="mainWrapper">
+            <!-- Topbar Utility -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="Toggle Sidebar Navigation" onclick="toggleSidebar()">
+                        <!-- Menu / Panel Icon -->
+                        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div class="breadcrumbs">
+                        <span>ROADGUARD</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">
+                            {% block breadcrumb %}COMMAND CENTER{% endblock %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Telemetry Chip -->
+                    <div class="topbar-telemetry">
+                        <span class="dot-indicator {% if sys_status and sys_status.cuda_available %}online{% else %}online{% endif %}"></span>
+                        <span>{% if sys_status and sys_status.cuda_available %}CUDA 12.4 ACTIVE{% else %}CPU PIPELINE{% endif %}</span>
+                        <span style="color: var(--border-strong);">&bull;</span>
+                        <span>YOLO11 NANO</span>
+                    </div>
+
+                    <!-- Model Status Indicator Badge -->
                     {% if sys_status and sys_status.inference_enabled %}
-                        <span class="status-dot online"></span>
-                        <span class="status-text">Model: Ready</span>
+                    <span class="badge badge-lime">Model Online</span>
                     {% else %}
-                        <span class="status-dot offline" style="background: #f59e0b;"></span>
-                        <span class="status-text" style="color: #fbbf24;">Model: Awaiting best.pt</span>
+                    <span class="badge badge-moderate" onclick="openSystemModal()" style="cursor: pointer;" title="Click for model diagnostics">Model Offline</span>
                     {% endif %}
+
+                    <!-- New Inspection Quick Action Button -->
+                    <a href="/analysis" class="btn btn-primary btn-sm">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>New Inspection</span>
+                    </a>
                 </div>
-                <a href="/analysis" class="btn btn-primary btn-sm">+ New Analysis</a>
+            </header>
+
+            <!-- Main Body Content -->
+            <main class="content-body">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Global Toast Notification Container -->
+            <div class="toast-container" id="toastContainer"></div>
+        </div>
+    </div>
+
+    <!-- ====================================================================
+         SYSTEM HARDWARE & MODEL DIAGNOSTICS MODAL
+         ==================================================================== -->
+    <div id="systemModal" class="hidden" style="position: fixed; inset: 0; background: rgba(32, 37, 31, 0.65); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+        <div class="card" style="width: 100%; max-width: 580px; box-shadow: var(--shadow-lg);">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <svg class="icon text-orange" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                    System Hardware & Model Diagnostics
+                </h3>
+                <button class="btn btn-outline btn-sm" onclick="closeSystemModal()">&times;</button>
+            </div>
+            <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                <div class="alert-strip {% if sys_status and sys_status.inference_enabled %}alert-strip-info{% else %}alert-strip-warning{% endif %}">
+                    <div>
+                        <div class="alert-title">
+                            {% if sys_status and sys_status.inference_enabled %}
+                                Custom Road Damage Weights Loaded (READY_CUSTOM)
+                            {% else %}
+                                Custom Road Damage Model Not Installed
+                            {% endif %}
+                        </div>
+                        <div class="alert-desc">
+                            {% if sys_status and sys_status.inference_enabled %}
+                                Model weights verified with full 4-class road damage taxonomy (D00, D10, D20, D40). Real-time inference enabled.
+                            {% else %}
+                                Generic COCO models cannot be used for road distress detection to prevent false hazard reports. Road-damage inference is disabled until custom fine-tuned weights are placed in <code>models/best.pt</code>.
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div style="background: var(--surface-secondary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">HOST ACCELERATION</div>
+                        <div style="font-weight: 700; margin-top: 0.25rem;">{% if sys_status and sys_status.cuda_available %}{{ sys_status.device_name }}{% else %}CPU Execution{% endif %}</div>
+                    </div>
+                    <div style="background: var(--surface-secondary); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">PLATFORM VERSION</div>
+                        <div style="font-weight: 700; margin-top: 0.25rem;">ROADGUARD AI v3.0</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Mandatory Distress Taxonomy (RDD2020 / RDD2022)</h4>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="badge">D00 Longitudinal</span>
+                        <span class="badge">D10 Transverse</span>
+                        <span class="badge">D20 Alligator</span>
+                        <span class="badge">D40 Pothole</span>
+                        <span class="badge">OTHER Surface</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <span class="text-sm">Run <code>python train.py</code> to train weights</span>
+                <button class="btn btn-secondary btn-sm" onclick="closeSystemModal()">Dismiss</button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content Container -->
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
+    <!-- Global Layout Scripts -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById("appSidebar");
+            const wrapper = document.getElementById("mainWrapper");
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle("mobile-open");
+            } else {
+                sidebar.classList.toggle("collapsed");
+                wrapper.classList.toggle("sidebar-collapsed");
+            }
+        }
 
-    <!-- Professional Footer -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-left">
-                <p class="footer-title">ROADGUARD AI &bull; Version 2.1.1</p>
-                <p class="footer-sub">Deep Learning Pothole & Crack Severity Assessment System</p>
-            </div>
-            <div class="footer-right">
-                <span class="footer-tag">YOLO11 Nano Engine</span>
-                <span class="footer-tag">PyTorch 2.6 CUDA</span>
-                <span class="footer-tag">Sort/IoU Tracking</span>
-            </div>
-        </div>
-    </footer>
+        function openSystemModal() {
+            const modal = document.getElementById("systemModal");
+            modal.classList.remove("hidden");
+            modal.style.display = "flex";
+        }
 
+        function closeSystemModal() {
+            const modal = document.getElementById("systemModal");
+            modal.classList.add("hidden");
+            modal.style.display = "none";
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            toast.className = "toast";
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = "0";
+                toast.style.transform = "translateY(10px)";
+                setTimeout(() => toast.remove(), 250);
+            }, 3500);
+        }
+
+        // Close modal on escape
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeSystemModal();
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

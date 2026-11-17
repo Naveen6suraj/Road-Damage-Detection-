@@ -310,5 +310,17 @@ def get_dashboard_stats(include_demo: bool = True, db_path: str = None) -> dict:
     return stats
 
 
+def delete_analysis(analysis_id: str, db_path: str = None) -> bool:
+    """Safely delete an analysis and its associated detections from SQLite."""
+    conn = get_db_connection(db_path)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM detections WHERE analysis_id = ?", (analysis_id,))
+    cursor.execute("DELETE FROM analyses WHERE id = ?", (analysis_id,))
+    affected = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return affected > 0
+
+
 # Initialize schema upon module import
 init_db()

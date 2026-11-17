@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Inspection History &bull; ROADGUARD AI Field Intelligence{% endblock %}
+{% block breadcrumb %}INSPECTION HISTORY{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-header-title">Inspection History</h1>
+        <p class="page-header-sub">Comprehensive historical audit trail of all road defect inspections, spatial-temporal video sessions, and pavement surveys.</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="/analysis" class="btn btn-primary btn-sm">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>+ New Inspection</span>
+        </a>
+    </div>
+</div>
+
+<!-- Filter & Search Controls Bar -->
+<div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body" style="padding: 1rem 1.5rem;">
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <!-- Search Input -->
+            <div style="flex: 1; min-width: 240px; position: relative;">
+                <input type="text" id="historySearch" placeholder="Search by Analysis ID or filename..." class="form-input" style="width: 100%; padding-left: 2.25rem;" oninput="applyFilters()">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+
+            <!-- Media Type Filter -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="text-sm font-mono">MEDIA:</span>
+                <select id="mediaFilter" class="form-select" onchange="applyFilters()">
+                    <option value="ALL">All Media</option>
+                    <option value="IMAGE">Images Only</option>
+                    <option value="VIDEO">Videos Only</option>
+                </select>
+            </div>
+
+            <!-- Severity Filter -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="text-sm font-mono">SEVERITY:</span>
+                <select id="severityFilter" class="form-select" onchange="applyFilters()">
+                    <option value="ALL">All Severities</option>
+                    <option value="CRITICAL">Critical Only</option>
+                    <option value="HIGH">High Only</option>
+                    <option value="MODERATE">Moderate Only</option>
+                    <option value="LOW">Low Only</option>
+                </select>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Reset</button>
+        </div>
+    </div>
+</div>
+
+<!-- History Table Card -->
+<section class="card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Archive Registry</h3>
+            <span class="card-subtitle"><span id="matchCount">{{ analyses|length }}</span> sessions logged</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="/reports" class="btn btn-secondary btn-sm">Report Portal</a>
+        </div>
+    </div>
+
+    <div class="table-container" style="border: none; border-radius: 0; box-shadow: none;">
+        {% if analyses and analyses|length > 0 %}
+        <table class="data-table" id="historyTable">
+            <thead>
+                <tr>
+                    <th>Analysis ID</th>
+                    <th>Inspection Date</th>
+                    <th>Media</th>
+                    <th>Source File</th>
+                    <th>Unique Defects</th>
+                    <th>Peak Severity</th>
+                    <th>Confidence</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in analyses %}
+                <tr class="history-row" data-id="{{ item.id|lower }}" data-filename="{{ item.filename|lower }}" data-media="{{ item.media_type|upper }}" data-severity="{{ item.max_severity_level|upper }}">
+                    <td>
+                        <a href="/results/{{ item.id }}" style="color: var(--accent-primary); font-family: var(--font-mono); font-weight: 600; text-decoration: none;">
+                            {{ item.id }}
+                        </a>
+                        {% if item.is_demo %}
+                        <span class="badge" style="font-size: 0.65rem; padding: 0.1rem 0.35rem; margin-left: 0.25rem;">DEMO</span>
+                        {% endif %}
+                    </td>
+                    <td class="font-mono text-sm">{{ item.created_at|datetime_format }}</td>
+                    <td>
+                        <span class="badge {% if item.media_type == 'video' %}badge-orange{% else %}badge-dark{% endif %}">
+                            {{ item.media_type|upper }}
+                        </span>
+                    </td>
+                    <td style="max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ item.filename }}">
+                        {{ item.filename }}
+                    </td>
+                    <td>
+                        <strong class="font-mono">{{ item.unique_defects or item.total_defects or 0 }}</strong>
+                    </td>
+                    <td>
+                        {% if item.max_severity_level == 'CRITICAL' %}
+                            <span class="badge badge-critical">CRITICAL [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
+                        {% elif item.max_severity_level == 'HIGH' %}
+                            <span class="badge badge-high">HIGH [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
+                        {% elif item.max_severity_level == 'MODERATE' %}
+                            <span class="badge badge-moderate">MODERATE [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
+                        {% elif item.max_severity_level == 'LOW' %}
+                            <span class="badge badge-low">LOW [{{ "%.0f"|format(item.max_severity_score or 0) }}]</span>
+                        {% else %}
+                            <span class="badge">CLEAN</span>
+                        {% endif %}
+                    </td>
+                    <td class="font-mono text-sm">{{ "%.1f"|format((item.avg_confidence or 0.0) * 100) }}%</td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="/results/{{ item.id }}" class="btn btn-secondary btn-sm">Inspect</a>
+                        <a href="/api/reports/download/{{ item.id }}/pdf" class="btn btn-outline btn-sm">PDF</a>
+                        <a href="/api/reports/download/{{ item.id }}/csv" class="btn btn-outline btn-sm">CSV</a>
+                        <button class="btn btn-outline btn-sm" onclick="confirmDeleteAnalysis('{{ item.id }}')" title="Delete from database" style="color: var(--sev-critical);">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <svg class="icon icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="empty-state-title">No inspection history</div>
+            <div class="empty-state-desc">Your recorded inspection analyses will appear here. Start your first inspection from the studio.</div>
+            <a href="/analysis" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">Launch Studio</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function applyFilters() {
+        const query = document.getElementById("historySearch").value.toLowerCase().trim();
+        const media = document.getElementById("mediaFilter").value;
+        const sev = document.getElementById("severityFilter").value;
+
+        const rows = document.querySelectorAll(".history-row");
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const id = row.getAttribute("data-id") || "";
+            const filename = row.getAttribute("data-filename") || "";
+            const rowMedia = row.getAttribute("data-media") || "";
+            const rowSev = row.getAttribute("data-severity") || "";
+
+            const matchesQuery = !query || id.includes(query) || filename.includes(query);
+            const matchesMedia = media === "ALL" || rowMedia === media;
+            const matchesSev = sev === "ALL" || rowSev === sev;
+
+            if (matchesQuery && matchesMedia && matchesSev) {
+                row.style.display = "";
+                visibleCount++;
+            } else {
+                row.style.display = "none";
+            }
+        });
+
+        const countDisplay = document.getElementById("matchCount");
+        if (countDisplay) countDisplay.innerText = visibleCount;
+    }
+
+    function resetFilters() {
+        document.getElementById("historySearch").value = "";
+        document.getElementById("mediaFilter").value = "ALL";
+        document.getElementById("severityFilter").value = "ALL";
+        applyFilters();
+    }
+
+    async function confirmDeleteAnalysis(id) {
+        if (!confirm(`Are you sure you want to delete inspection record '${id}'? This will remove all associated defect logs from the database.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/analyses/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`Analysis ${id} removed successfully.`);
+                setTimeout(() => window.location.reload(), 600);
+            } else {
+                alert(`Error: ${data.error || 'Failed to delete record.'}`);
+            }
+        } catch (e) {
+            alert(`Network error deleting record: ${e.message}`);
+        }
+    }
+</script>
+{% endblock %}
