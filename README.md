@@ -1,17 +1,17 @@
 # ROADGUARD AI: Pothole & Road-Crack Severity Estimator from Dashcam Video
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
-[![PyTorch 2.6 CUDA](https://img.shields.io/badge/PyTorch-2.6%20CUDA-green.svg)](https://pytorch.org/)
+[![PyTorch 2.6 CUDA / CPU](https://img.shields.io/badge/PyTorch-2.6%20CUDA%2FCPU-green.svg)](https://pytorch.org/)
 [![YOLO11 Nano](https://img.shields.io/badge/Model-YOLO11%20Nano-cyan.svg)](https://docs.ultralytics.com/)
-[![Tests Passed](https://img.shields.io/badge/Tests-35%2F35%20Passed-brightgreen.svg)](docs/TESTING.md)
+[![Tests Passed](https://img.shields.io/badge/Tests-42%2F42%20Passed-brightgreen.svg)](docs/TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-An industrial-grade, academically rigorous computer vision and roadway condition assessment application (v2.1.0 Hardened Academic Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports.
+An academic and practical computer vision application for roadway condition assessment (v2.1.1 Audited Release). ROADGUARD AI processes forward-facing dashcam video, high-resolution pavement imagery, and live camera streams to detect road defects, eliminate redundant multi-frame counts via spatial-temporal tracking, estimate empirical visual risk severity (LOW, MODERATE, HIGH, CRITICAL), and generate executive PDF and CSV inspection reports.
 
 ---
 
 ## 1. Project Title
-**ROADGUARD AI (v2.1.0): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
+**ROADGUARD AI (v2.1.1): Pothole & Road-Crack Severity Estimator from Dashcam Video**  
 *Subtitle: Intelligent Road Damage Detection & Severity Assessment System*
 
 ---
@@ -19,7 +19,7 @@ An industrial-grade, academically rigorous computer vision and roadway condition
 ## 2. Abstract
 Roadway surface distress poses severe threats to vehicular safety, municipal maintenance budgets, and transit efficiency. Conventional road inspections rely on expensive profiling vans or hazardous visual foot-surveys, while existing deep-learning demonstrators merely produce uncalibrated bounding boxes without estimating physical hazard severity or deduplicating video detections. 
 
-ROADGUARD AI addresses this gap with an end-to-end AI monitoring system. Powered by YOLO11 Nano accelerated via PyTorch CUDA on an NVIDIA GeForce RTX 3050 Laptop GPU, the system combines real-time object detection with an IoU/Centroid multi-object tracker that prevents duplicate counting across video frames. Furthermore, an empirical Severity Estimation Engine evaluates defect type, normalized visible damage area, lane perspective proximity, and multi-frame persistence into an empirical 0–100 Visual Severity Risk Index across four maintenance action tiers: **CRITICAL**, **HIGH**, **MODERATE**, and **LOW**. The system features a responsive dark-navy dashboard, WebRTC live camera inspection, automated PDF report generation, and SQLite historical persistence.
+ROADGUARD AI addresses this gap with an end-to-end AI monitoring system. Powered by YOLO11 Nano accelerated via PyTorch CUDA (with transparent CPU fallback), the system combines real-time object detection with an IoU/Centroid multi-object tracker that prevents duplicate counting across video frames. Furthermore, an empirical Severity Estimation Engine evaluates defect type, normalized visible damage area, lane perspective proximity, and multi-frame persistence into an empirical 0–100 Visual Severity Risk Index across four maintenance action tiers: **CRITICAL**, **HIGH**, **MODERATE**, and **LOW**. The system features a responsive dark-navy dashboard, WebRTC live camera inspection, automated PDF report generation, and SQLite historical persistence.
 
 ---
 
@@ -39,10 +39,10 @@ Municipal highway authorities and civil engineers face critical operational obst
 
 ## 5. Objectives
 - **Standardized Multi-Class Detection**: Detect and classify defects into: Longitudinal Crack (`D00`), Transverse Crack (`D10`), Alligator Crack (`D20`), Pothole (`D40`), and Surface Distress (`OTHER`).
-- **Hardware-Aware Acceleration**: Automatically dispatch tensor operations to NVIDIA RTX GPU with CUDA 12.4, with seamless fallback to CPU.
+- **Hardware-Aware Acceleration**: Automatically dispatch tensor operations to NVIDIA GPU via CUDA, with seamless fallback to CPU.
 - **Multi-Frame Tracking & Deduplication**: Track defects across video frames to distinguish total frame detections from unique physical road defects.
 - **Empirical Severity Estimation**: Calculate a 0–100 visual risk score without making unsubstantiated monocular depth claims.
-- **Reporting & Data Export**: Generate professional downloadable PDF inspection summaries and CSV defect registries.
+- **Reporting & Data Export**: Generate downloadable PDF inspection summaries and CSV defect registries.
 
 ---
 
@@ -57,16 +57,18 @@ The prior repository codebase suffered from several technical and architectural 
 
 ---
 
-## 7. Proposed System (v2.1.0 Hardened Release)
-ROADGUARD AI transforms the repository into a complete, professional AI engineering application:
-- Modular architecture with clean Flask Blueprints and SQLite database persistence (`roadguard.db`, `roadguard_demo.db`).
+## 7. Proposed System (v2.1.1 Audited Release)
+ROADGUARD AI transforms the repository into an academically verified, hardened application:
+- Modular architecture with clean Flask Blueprints and SQLite database persistence (`roadguard.db`).
 - Strict model validation guard rejecting generic COCO weights to prevent false road distress reports.
-- Automatic hardware detection with GPU acceleration (RTX 3050 CUDA 12.4).
+- Complete road damage taxonomy enforcement (`D00`, `D10`, `D20`, `D40`).
+- Automatic hardware detection with GPU acceleration (CUDA) and CPU fallback.
 - `RoadDefectTracker` implementing IoU and centroid association with Confirmed vs Transient separation and class-matching integrity.
 - `core/severity_engine.py` calculating empirical visual risk indices with transparent rationales, temporal persistence bonus (+3.0 pts), and transient discount (-2.0 pts).
+- Directory traversal defense and safe production secret key validation.
 - Asynchronous video processing with real-time polling progress feedback (FPS, frame count, elapsed time).
 - Executive ReportLab PDF generation and CSV export displaying Status and Raw/Adjusted severity.
-- 35 automated tests covering all modules with 100% pass rate.
+- 42 automated tests covering all modules with 100% pass rate.
 
 ---
 
@@ -76,7 +78,7 @@ ROADGUARD AI transforms the repository into a complete, professional AI engineer
 flowchart TD
     Client["Client Web Browser\n(Dashboard / Analysis Studio / Webcam)"]
     Flask["Flask Application (app.py)\nBlueprints: Dashboard, Image, Video, Camera, Reports"]
-    Detector["YOLO11 Nano Detector\n(NVIDIA RTX 3050 CUDA / CPU)"]
+    Detector["YOLO11 Nano Detector\n(NVIDIA GPU CUDA / CPU Fallback)"]
     Severity["Severity Engine\n(Visual Risk 0-100)"]
     Tracker["Spatial-Temporal Tracker\n(IoU Deduplication)"]
     VideoProc["Video Processing Pipeline\n(OpenCV HUD Overlay)"]
@@ -100,9 +102,9 @@ For complete sequence diagrams, see [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_AR
 ---
 
 ## 9. Technology Stack
-- **Deep Learning Framework**: PyTorch 2.6.0 with CUDA 12.4
-- **Computer Vision Model**: Ultralytics YOLO11 Nano (`yolo11n.pt`)
-- **Image & Video Processing**: OpenCV (`opencv-python` 5.0), Pillow
+- **Deep Learning Framework**: PyTorch 2.6.0 (supports CUDA 12.4 and CPU)
+- **Computer Vision Model**: Ultralytics YOLO11 Nano
+- **Image & Video Processing**: OpenCV (`opencv-python` >= 4.8.0, supports 4.x and 5.x), Pillow
 - **Backend Framework**: Python 3.12, Flask 3.1
 - **Persistence**: SQLite 3 (zero-configuration relational database)
 - **Report Generation**: ReportLab 5.1
@@ -134,17 +136,18 @@ The raw dataset contains Pascal VOC XML annotations. Preprocessing is automated 
 
 ---
 
-## 12. YOLO Model Architecture and Configuration
-- **Architecture**: Ultralytics YOLO11 Nano
+## 12. YOLO Model Architecture and Weight Configuration
+- **Architecture**: Ultralytics YOLO11 Nano (`yolo11n`)
 - **Parameters**: ~2.6 Million parameters
 - **Input Resolution**: $640 \times 640$ pixels
-- **Inference Latency**: ~12 ms per frame on NVIDIA RTX 3050 Laptop GPU
-- **Memory Footprint**: < 600 MB VRAM during batched inference
+- **Base Model (`yolo11n.pt`)**: Generic COCO pretrained weights used exclusively as a transfer-learning base backbone for `train.py`. **Inference on COCO base weights is explicitly disabled** to prevent misclassifying non-road objects (such as vehicles or pedestrians) as pavement defects.
+- **Custom Model (`models/best.pt`)**: Fine-tuned checkpoint trained on road damage datasets. Must supply the complete 4-class taxonomy (`D00`, `D10`, `D20`, `D40`). Live road damage inference requires valid custom weights.
+- **Hardware Dispatch**: Tensor operations automatically utilize NVIDIA GPU acceleration when CUDA is available, or fall back seamlessly to multi-threaded CPU execution.
 
 ---
 
 ## 13. Severity Estimation Methodology
-The Severity Estimation Engine (`core/severity_engine.py`) calculates an empirical Visual Severity Risk Index ($S \in [0, 100]$):
+The Severity Estimation Engine (`core/severity_engine.py`) calculates an empirical Visual Severity Risk Index ($S \in [5.0, 100.0]$):
 
 $$S = \min\left(100.0, \max\left(5.0, W_{\text{cat}} + W_{\text{area}} + W_{\text{pos}} + W_{\text{geom}} + \Delta_{\text{pers}}\right)\right)$$
 
@@ -154,13 +157,13 @@ $$S = \min\left(100.0, \max\left(5.0, W_{\text{cat}} + W_{\text{area}} + W_{\tex
 - **$W_{\text{geom}}$ (Aspect Ratio)**: High elongation for linear cracks or compact aspect ratio for craters up to 10 pts.
 - **$\Delta_{\text{pers}}$ (Temporal Persistence)**: +3 pts for persistent tracks; -2 pts for transient 1-frame noise.
 
-### Maintenance Tiers:
+### Maintenance Action Tiers:
 - **CRITICAL** (80.0 – 100.0): Urgent repair required within 24–48 hours.
 - **HIGH** (60.0 – 79.9): Structural distress; prioritized within 7 days.
 - **MODERATE** (30.0 – 59.9): Noticeable distress; scheduled routine maintenance.
 - **LOW** (0.0 – 29.9): Superficial early-stage hairline cracking.
 
-> **Academic Limitation Note:** The system makes no unsubstantiated claims of physical centimeter depth without calibrated stereo geometry or LiDAR. Detection confidence is kept strictly independent of physical severity. Full mathematical details in [docs/SEVERITY_METHODOLOGY.md](docs/SEVERITY_METHODOLOGY.md).
+> **Empirical Visual Risk Limitation Note:** The severity index is an empirical visual risk heuristic based on 2D image geometry, lane position, and persistence. The system makes no monocular depth claims without calibrated stereo cameras or LiDAR. Full mathematical details in [docs/SEVERITY_METHODOLOGY.md](docs/SEVERITY_METHODOLOGY.md).
 
 ---
 
@@ -178,16 +181,16 @@ $$S = \min\left(100.0, \max\left(5.0, W_{\text{cat}} + W_{\text{area}} + W_{\tex
 ## 15. Object-Tracking Methodology
 Implemented in `core/object_tracker.py`:
 - Computes Intersection-over-Union (IoU) and centroid Euclidean distance between consecutive frame detections.
-- Associates detections with existing active tracks ($\tau_{\text{IoU}} \ge 0.25$).
+- Associates detections with existing active tracks ($\tau_{\text{IoU}} \ge 0.25$) strictly matching defect class.
 - Deduplicates observations across frames, tracking each defect's lifetime, peak confidence, and peak severity score.
 - Distinguishes **Total Frame Detections** from **True Unique Tracked Defects**.
 
 ---
 
 ## 16. Implementation Details
-- **`app.py`**: Flask application entry point with blueprint registrations.
+- **`app.py`**: Flask application entry point with blueprint registrations and secure environment key handling.
 - **`routes/`**: Blueprints for dashboard, image analysis, video analysis, camera streams, and reports.
-- **`database.py`**: SQLite database managing `analyses` and `detections` tables.
+- **`database.py`**: SQLite database managing `analyses` and `detections` tables with WAL mode.
 - **`core/report_generator.py`**: ReportLab flowable PDF and CSV generator.
 - **`utils/`**: Input validators, secure file managers, and metrics calculation.
 
@@ -196,20 +199,34 @@ Implemented in `core/object_tracker.py`:
 ## 17. Installation Instructions
 
 ### Prerequisites:
-- Python 3.10 – 3.12
-- NVIDIA GPU with CUDA drivers (optional, automatic CPU fallback provided)
+- Python 3.10 – 3.12 (Tested on Python 3.12.10)
+- NVIDIA GPU with CUDA drivers (optional; CPU execution is fully supported)
 
 ```powershell
 # Clone or navigate to the repository
 cd RoadGuard-AI
 
-# Install dependencies
+# For NVIDIA GPU with CUDA 12.4:
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+
+# OR for CPU-Only Execution:
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+# Install application dependencies:
 pip install -r requirements.txt
+
+# Or for exact frozen package versions:
+pip install -r requirements-lock.txt
 ```
 
 ---
 
 ## 18. Execution Instructions
+
+Initialize or verify the SQLite database:
+```powershell
+python init_db.py
+```
 
 Start the application:
 ```powershell
@@ -234,7 +251,7 @@ Train a custom YOLO11 model on the Road Damage Dataset:
 # Step 2: Convert XML annotations to YOLO format
 python convert_xml_to_yolo.py
 
-# Step 3: Run model training (auto-detects NVIDIA RTX GPU)
+# Step 3: Run model training (auto-detects GPU or CPU)
 python train.py --epochs 100 --batch 4 --imgsz 640 --device auto
 ```
 Trained weights will automatically export to `models/best.pt`.
@@ -243,7 +260,7 @@ Trained weights will automatically export to `models/best.pt`.
 
 ## 20. Testing Instructions
 
-Run the complete automated test suite:
+Run the complete automated test suite (all 42 tests run sandboxed and do not require GPU):
 ```powershell
 python -m pytest tests/ -v
 ```
@@ -258,9 +275,9 @@ python evaluate.py --eval-severity-only
 ## 21. Evaluation Results (Genuinely Measured)
 
 ### Automated Test Suite:
-- **Total Tests Executed**: 35
-- **Tests Passed**: 35 (100% Pass Rate)
-- **Execution Time**: 8.63 seconds on NVIDIA RTX 3050 Laptop GPU (CUDA 12.4, PyTorch 2.6.0+cu124)
+- **Total Tests Executed**: 42
+- **Tests Passed**: 42 (100% Pass Rate)
+- **Execution Time**: 5.84 seconds on Python 3.12.10
 
 ### Severity Engine Consistency Evaluation:
 - **Massive Near-Field Pothole**: 93.1 pts -> **CRITICAL** (Expected: CRITICAL) [PASS]
@@ -282,7 +299,7 @@ python evaluate.py --eval-severity-only
 ---
 
 ## 23. Limitations
-- Monocular 2D images cannot determine physical centimeter pothole depth without calibrated stereo geometry or LiDAR.
+- Monocular 2D images cannot measure physical centimeter pothole depth without calibrated stereo geometry or LiDAR.
 - Adverse weather conditions (e.g. heavy rain, night driving, lens glare) may reduce detection confidence.
 - Forward-moving dashcams provide limited viewing angles of transverse cracks positioned along roadside shoulders.
 
@@ -291,16 +308,21 @@ python evaluate.py --eval-severity-only
 ## 24. Future Enhancements
 - Stereo disparity fusion for calibrated millimeter defect depth measurement.
 - Integration of GPS NMEA coordinate logging for automated GIS mapping.
-- Model quantization to TensorRT INT8 for ultra-low latency edge devices (Raspberry Pi 5 / NVIDIA Jetson).
+- Model quantization to TensorRT INT8 for edge devices.
 
 ---
 
 ## 25. Conclusion
-ROADGUARD AI transforms a basic detection script into a robust, academically grounded, production-ready computer vision application. By combining YOLO11 object detection, spatial-temporal tracking, and an empirical severity risk engine, the system delivers actionable road distress monitoring on consumer hardware.
+ROADGUARD AI transforms a basic detection script into an academically grounded, rigorous computer vision application. By combining YOLO11 object detection, spatial-temporal tracking, and an empirical severity risk engine, the system delivers actionable road distress monitoring on standard consumer hardware.
 
 ---
 
-## 26. References
+## 26. License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 27. References
 1. Arya, D., Maeda, H., Ghosh, S. K., Toshniwal, D., Mraz, A., Kashiyama, T., & Sekimoto, Y. (2020). Global Road Damage Detection: State-of-the-Art Solutions. *IEEE Transactions on Intelligent Transportation Systems*.
 2. Jocher, G., & Chaurasia, A. (2024). Ultralytics YOLO11: Real-Time Object Detection and Segmentation. Ultralytics.
 3. Bewley, A., Ge, Z., Ott, L., Ramos, F., & Upcroft, B. (2016). Simple online and realtime tracking (SORT). *IEEE ICIP*.

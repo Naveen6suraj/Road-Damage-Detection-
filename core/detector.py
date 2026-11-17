@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - YOLO11 Road Damage Detector
 Module: core/detector.py
-Version: 2.1.0
+Version: 2.1.1
 
 Handles custom model initialization, strict road-damage class validation,
 hardware acceleration (CUDA / CPU), and HUD overlay rendering.
@@ -54,25 +54,37 @@ class RoadDamageDetector:
 
     def _is_valid_road_damage_model(self, names_dict: Dict[int, str]) -> bool:
         """
-        Verify that model classes represent legitimate road damage distress types,
-        rather than standard 80-class COCO objects (e.g., person, car, bicycle).
+        Verify that model classes represent a complete, legitimate road damage taxonomy,
+        rejecting generic COCO models (e.g., person, car, bicycle) and partially
+        compatible models missing required road defect categories.
         """
-        if not names_dict:
+        if not names_dict or not isinstance(names_dict, dict):
             return False
 
-        # If it has 80 classes including 'person', it is a standard COCO model
-        if len(names_dict) == 80 and any(n.lower() in ("person", "bicycle", "car") for n in names_dict.values()):
+        # Reject generic COCO models (80 classes or containing distinctive COCO labels)
+        coco_indicators = {
+            "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
+            "truck", "boat", "traffic light", "fire hydrant", "stop sign", "parking meter",
+            "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear",
+            "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase"
+        }
+        if len(names_dict) == 80:
             return False
 
-        # Check if any class matches the road damage taxonomy
-        recognized = 0
+        mapped_codes = set()
         for name in names_dict.values():
             clean_name = str(name).strip().lower()
+            if clean_name in coco_indicators:
+                return False
             if clean_name in config.CLASS_ALIAS_MAP:
-                recognized += 1
+                std_id = config.CLASS_ALIAS_MAP[clean_name]
+                mapped_codes.add(config.CLASS_CODES[std_id])
+            else:
+                # Incompatible class detected that is not part of the road damage taxonomy
+                return False
 
-        # Must recognize at least one road damage category
-        return recognized >= 1
+        # Must contain all required road damage categories (D00, D10, D20, D40)
+        return config.REQUIRED_ROAD_DAMAGE_CODES.issubset(mapped_codes)
 
     def _load_model(self):
         """Safely load and validate custom YOLO road damage model weights."""
@@ -152,20 +164,20 @@ class RoadDamageDetector:
         """Return model loading state and class compatibility information."""
         return self.get_status()
 
-    def _normalize_class(self, cls_id: int, cls_name: str) -> Tuple[str, str]:
+    def _normalize_class(self, cls_id: int, cls_name: str) -> Tuple[Optional[str], Optional[str]]:
         """
         Normalize detected class ID and name to standardized RoadGuard classes:
         D00, D10, D20, D40, OTHER.
+        Strictly verifies class name against recognized road damage aliases.
+        NEVER maps by class ID alone. Returns (None, None) if the class is unknown.
         """
         lower_name = str(cls_name).lower().strip()
         if lower_name in config.CLASS_ALIAS_MAP:
             std_id = config.CLASS_ALIAS_MAP[lower_name]
             return config.CLASS_CODES[std_id], config.CLASS_NAMES[std_id]
 
-        if cls_id in config.CLASS_CODES:
-            return config.CLASS_CODES[cls_id], config.CLASS_NAMES[cls_id]
-
-        return "OTHER", "Other Corruption"
+        # Explicitly refuse to map arbitrary unknown classes using class ID alone
+        return None, None
 
     def detect(
         self,
@@ -214,6 +226,8 @@ class RoadDamageDetector:
                     raw_det.get("class_id", 3),
                     raw_det.get("class_name", "Pothole")
                 )
+                if not code or not name:
+                    continue
                 class_counts[code] = class_counts.get(code, 0) + 1
                 det_payload = {
                     "box": raw_det["box"],
@@ -268,6 +282,9 @@ class RoadDamageDetector:
                 raw_name = self.model.names.get(cls_idx, "Unknown")
 
                 class_code, class_name = self._normalize_class(cls_idx, raw_name)
+                if not class_code or not class_name:
+                    continue
+
                 class_counts[class_code] = class_counts.get(class_code, 0) + 1
 
                 det_payload = {

@@ -1,6 +1,23 @@
-# RoadGuard AI - Road Damage Detection & Severity Estimation Dependencies
-flask>=3.0.0
-ultralytics>=8.3.0
+# ROADGUARD AI - Core Application & Research Dependencies
+# Tested Python Environment: Python 3.10 - 3.12 (Tested on Python 3.12.10 64-bit)
+#
+# ==============================================================================
+# PyTorch & Hardware Acceleration Installation Instructions:
+# ==============================================================================
+# For NVIDIA GPU Acceleration (CUDA 12.4):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+#
+# For CPU-Only Execution (No GPU required):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#
+# Install Application Dependencies:
+#   pip install -r requirements.txt
+# ==============================================================================
+# Note on OpenCV: Compatible with OpenCV >= 4.8.0 (tested with both 4.x and 5.x)
+# ==============================================================================
+
+flask>=3.0.0,<3.2.0
+ultralytics>=8.3.0,<8.5.0
 torch>=2.2.0
 torchvision>=0.17.0
 opencv-python>=4.8.0

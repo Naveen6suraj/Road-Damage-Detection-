@@ -1,24 +1,40 @@
 # ROADGUARD AI: Model Weights Directory
+Version: 2.1.1
 
-This directory stores trained deep learning weights for road damage detection.
+This directory stores deep learning model weights for the ROADGUARD AI road distress assessment system.
 
-## Supported Model Formats:
-1. **`best.pt` (Custom Model Weights)**:
-   - When present, ROADGUARD AI automatically loads this file as the primary custom-trained road damage detector.
-   - Standard Road Damage classes:
-     - `0`: Longitudinal Crack (`D00`)
-     - `1`: Transverse Crack (`D10`)
-     - `2`: Alligator Crack (`D20`)
-     - `3`: Pothole (`D40`)
-     - `4`: Other Corruption (`OTHER`)
-   - Placed automatically here upon completing training with `python train.py`.
+---
 
-2. **`yolo11n.pt` (Base / Fallback Model)**:
-   - Ultralytics YOLO11 Nano base weights used for transfer learning in `train.py` or fallback verification when custom `best.pt` has not yet been trained.
-   - Operating status is transparently reported in the application UI as "Evaluation / Fallback Mode".
+## 1. Primary Model: `best.pt` (Custom Road-Damage Weights)
+- **Role**: Primary production model for road damage detection and severity assessment.
+- **Taxonomy Requirement**: The custom model **must** contain the complete standardized road damage taxonomy:
+  - `0`: Longitudinal Crack (`D00`)
+  - `1`: Transverse Crack (`D10`)
+  - `2`: Alligator Crack (`D20`)
+  - `3`: Pothole (`D40`)
+  - `4`: Other Corruption (`OTHER`, optional / alias `D43`, `D44`, `D50`)
+- **Generation**: Created automatically upon running `python train.py` on the preprocessed Road Damage Dataset (RDD2020 / RDD2022).
+- **Validation**: When placed at `models/best.pt`, ROADGUARD AI inspects the model metadata on startup, verifies the class taxonomy, and unlocks inference across image, video, and camera pipelines.
 
-## Instructions for Supplying Trained Weights:
-If you have trained weights from an existing training run:
-1. Copy your `.pt` checkpoint file into this folder:
+---
+
+## 2. Base Backbone: `yolo11n.pt` (Transfer-Learning Base Only)
+- **Role**: Pretrained Ultralytics YOLO11 Nano weights trained on the 80-class Common Objects in Context (COCO) dataset.
+- **Inference Restriction**: **Generic COCO weights cannot and will not be used for road-damage inference.**
+- **Automatic Protection**: If `models/best.pt` is absent, the system detects `yolo11n.pt` as a generic transfer-learning base and explicitly disables road-damage inference with an informative UI message (`CUSTOM_MODEL_MISSING`). Generic classes (e.g., person, car, bicycle) are never mapped to road defects.
+- **Purpose**: Serves exclusively as the initialization backbone when fine-tuning via `python train.py`.
+
+---
+
+## Instructions for Deploying Trained Weights
+1. Train a model on the RDD2022 dataset:
+   ```powershell
+   python train.py --epochs 100 --batch 4 --imgsz 640 --device auto
+   ```
+2. Or copy your custom-trained YOLO `.pt` checkpoint with matching taxonomy to:
    `models/best.pt`
-2. Restart the application or refresh the dashboard. ROADGUARD AI will automatically detect and load `best.pt` on the active GPU/CPU device.
+3. Launch the application:
+   ```powershell
+   python app.py
+   ```
+   ROADGUARD AI will verify the taxonomy and report `READY_CUSTOM` status.

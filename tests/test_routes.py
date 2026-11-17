@@ -148,3 +148,29 @@ def test_404_handler(client):
     res = client.get("/non_existent_page_route")
     assert res.status_code == 404
 
+
+def test_security_path_traversal_protection(client):
+    # Attempts to traverse directory outside of outputs/reports should be safely rejected
+    res = client.get("/outputs/../config.py")
+    assert res.status_code == 404
+
+    res2 = client.get("/reports/../../config.py")
+    assert res2.status_code == 404
+
+
+def test_security_invalid_analysis_id(client):
+    # Malformed analysis ID with path traversal characters must be rejected
+    res = client.get("/api/reports/download/../../etc/passwd/pdf")
+    assert res.status_code in (400, 404)
+
+
+def test_security_production_secret_key_enforcement(monkeypatch):
+    import importlib
+    monkeypatch.setenv("ROADGUARD_ENV", "production")
+    monkeypatch.delenv("ROADGUARD_SECRET_KEY", raising=False)
+    with pytest.raises(RuntimeError) as exc_info:
+        import config as cfg
+        importlib.reload(cfg)
+    assert "ROADGUARD_SECRET_KEY" in str(exc_info.value)
+
+

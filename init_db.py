@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - Database Initialization Script
 Module: init_db.py
-Version: 2.1.0
+Version: 2.1.1
 
 Initializes the SQLite schema for ROADGUARD AI.
 Supports fresh database creation, migration checks, and optional database wipe.

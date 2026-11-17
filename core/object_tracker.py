@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - Multi-Object Defect Tracker
 Module: core/object_tracker.py
-Version: 2.1.0
+Version: 2.1.1
 
 Provides multi-frame temporal tracking of detected road damage to prevent
 repeated counting of the same defect across consecutive video frames.

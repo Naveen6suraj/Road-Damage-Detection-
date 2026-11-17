@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - XML to YOLO Annotation Converter
 Script: convert_xml_to_yolo.py
-Version: 2.1.0
+Version: 2.1.1
 
 Converts Pascal VOC XML road damage annotations (from RDD2020 / RDD2022 datasets)
 into standard YOLO bounding box format with normalized coordinates.
@@ -161,7 +161,7 @@ def convert_xml_file(xml_path: str, img_search_dirs: list, out_img_dir: str, out
 def run_dataset_conversion(data_dir: str = "Data", output_dir: str = "dataset", val_split: float = 0.2):
     """Execute complete dataset conversion across available splits."""
     print("=" * 65)
-    print(" ROADGUARD AI - Dataset Annotation Converter v2.1.0")
+    print(" ROADGUARD AI - Dataset Annotation Converter v2.1.1")
     print(f" Source Directory:      {os.path.abspath(data_dir)}")
     print(f" Output Directory:      {os.path.abspath(output_dir)}")
     print("=" * 65)
@@ -284,7 +284,7 @@ def run_dataset_conversion(data_dir: str = "Data", output_dir: str = "dataset", 
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Convert Pascal VOC XML dataset to YOLO format (v2.1.0)")
+    parser = argparse.ArgumentParser(description="Convert Pascal VOC XML dataset to YOLO format (v2.1.1)")
     parser.add_argument("--data-dir", default="Data", help="Path to raw dataset folder")
     parser.add_argument("--output-dir", default="dataset", help="Output directory for YOLO dataset")
     parser.add_argument("--val-split", default=0.2, type=float, help="Validation split ratio if val folder absent")

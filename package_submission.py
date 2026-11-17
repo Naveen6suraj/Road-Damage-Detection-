@@ -29,8 +29,12 @@ EXCLUDE_EXTS = {
     ".pyd",
     ".part",
     ".tmp",
+    ".db",
+    ".sqlite",
+    ".sqlite3",
     ".db-wal",
-    ".db-shm"
+    ".db-shm",
+    ".db-journal"
 }
 
 

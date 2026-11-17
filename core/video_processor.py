@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - Video Processing Engine
 Module: core/video_processor.py
-Version: 2.1.0
+Version: 2.1.1
 
 Executes end-to-end dashcam video analysis:
 - Frame extraction with configurable stride

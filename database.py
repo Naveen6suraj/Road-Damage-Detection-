@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - Database Management Module
 Module: database.py
-Version: 2.1.0
+Version: 2.1.1
 
 SQLite persistent storage for analyses and defect detections.
 Includes WAL mode for concurrency, explicit demo data tracking,

@@ -25,7 +25,7 @@ def create_app():
     )
 
     # Configuration
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "roadguard-ai-secret-key-2026")
+    app.config["SECRET_KEY"] = config.SECRET_KEY
     app.config["MAX_CONTENT_LENGTH"] = config.MAX_CONTENT_LENGTH
 
     # Initialize SQLite schema

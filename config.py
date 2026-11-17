@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - Configuration Module
 Intelligent Road Damage Detection & Severity Assessment
-Version: 2.1.0 (Hardened Academic Release)
+Version: 2.1.1 (Audited Release)
 """
 import os
 import torch
@@ -12,10 +12,21 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 # Application Metadata
 APP_NAME = "ROADGUARD AI"
 APP_SUBTITLE = "Intelligent Road Damage Detection & Severity Assessment"
-APP_VERSION = "2.1.0"
+APP_VERSION = "2.1.1"
 
-# Secret Key (Environment variable with secure fallback)
-SECRET_KEY = os.environ.get("ROADGUARD_SECRET_KEY", secrets.token_hex(32))
+# Environment and Secret Key Security
+ENV = os.environ.get("ROADGUARD_ENV", os.environ.get("FLASK_ENV", "development")).strip().lower()
+_env_secret = os.environ.get("ROADGUARD_SECRET_KEY")
+
+if ENV == "production":
+    if not _env_secret:
+        raise RuntimeError(
+            "CRITICAL SECURITY CONFIGURATION ERROR: ROADGUARD_SECRET_KEY environment variable "
+            "must be explicitly set when running in production mode."
+        )
+    SECRET_KEY = _env_secret
+else:
+    SECRET_KEY = _env_secret if _env_secret else secrets.token_hex(32)
 
 # Storage Directories
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
@@ -87,6 +98,8 @@ CLASS_ALIAS_MAP = {
 
 # Standard Road Damage Class Names for Verification
 VALID_ROAD_DAMAGE_CLASSES = set(CLASS_ALIAS_MAP.keys())
+# Mandatory classes required for a model to be validated as a legitimate road damage detector
+REQUIRED_ROAD_DAMAGE_CODES = {"D00", "D10", "D20", "D40"}
 
 # Severity Engine Configuration (Mathematical Formula S in [5, 100])
 SEVERITY_LEVELS = {

@@ -1,7 +1,7 @@
 """
 ROADGUARD AI - Severity Estimation Engine
 Module: core/severity_engine.py
-Version: 2.1.0
+Version: 2.1.1
 
 Provides an empirical, visual risk scoring methodology for road defects detected
 in single-camera dashcam imagery and video streams.
