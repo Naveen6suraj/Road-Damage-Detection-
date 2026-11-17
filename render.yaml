@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: roadguard-ai
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python init_db.py --reset
+    startCommand: python app.py --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: ROADGUARD_ENV
+        value: production
+      - key: ROADGUARD_SECRET_KEY
+        generateValue: true
