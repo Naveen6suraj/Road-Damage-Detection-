@@ -96,7 +96,11 @@ def test_api_model_status(client):
     assert "system" in data
 
 
-def test_image_upload_missing_custom_model(client):
+def test_image_upload_missing_custom_model(client, monkeypatch):
+    import routes.image_routes as img_rt
+    det = img_rt.get_detector()
+    monkeypatch.setattr(det, "inference_enabled", False)
+
     img = np.zeros((480, 640, 3), dtype=np.uint8)
     _, buf = cv2.imencode(".jpg", img)
     data = {
@@ -110,7 +114,11 @@ def test_image_upload_missing_custom_model(client):
     assert "Custom road damage detection model is not available" in resp_data["error"]
 
 
-def test_video_upload_missing_custom_model(client):
+def test_video_upload_missing_custom_model(client, monkeypatch):
+    import routes.video_routes as vid_rt
+    proc = vid_rt.get_video_processor()
+    monkeypatch.setattr(proc.detector, "inference_enabled", False)
+
     data = {
         "file": (io.BytesIO(b"fake video data"), "test.mp4")
     }

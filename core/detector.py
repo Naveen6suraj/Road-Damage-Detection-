@@ -265,8 +265,11 @@ class RoadDamageDetector:
         if self.device == "cuda" and torch.cuda.is_available():
             torch.cuda.empty_cache()
 
+        # Adaptive exposure normalization for sun-glare / dark pavement (inference tensor only)
+        infer_frame = self._normalize_exposure_for_inference(frame)
+
         # Execute YOLO Inference
-        results = self.model(frame, conf=conf, imgsz=imgsz, device=self.device, verbose=False)
+        results = self.model(infer_frame, conf=conf, imgsz=imgsz, device=self.device, verbose=False)
 
         for r in results:
             if r.boxes is None or len(r.boxes) == 0:
@@ -310,6 +313,34 @@ class RoadDamageDetector:
                 self._draw_detection_overlay(annotated, full_detection)
 
         return annotated, detections, class_counts
+
+    def _normalize_exposure_for_inference(self, frame: np.ndarray) -> np.ndarray:
+        """
+        Apply adaptive gamma normalization to severely overexposed (sun-glare) or
+        underexposed (shadow/dusk) roadway surfaces before YOLO inference.
+        Preserves original pixels for visual annotation rendering.
+        """
+        h = frame.shape[0]
+        road_roi = frame[int(h * 0.4):, :] if h >= 20 else frame
+        gray = cv2.cvtColor(road_roi, cv2.COLOR_BGR2GRAY)
+        mean_luma = float(np.mean(gray))
+        std_luma = float(np.std(gray))
+
+        # Skip uniform/blank synthetic frames
+        if std_luma < 5.0:
+            return frame
+
+        if mean_luma > 155.0:
+            # Overexposed / sun-washed road surface -> restore asphalt contrast
+            gamma = 1.65
+        elif mean_luma < 65.0:
+            # Underexposed / dark shadow road surface -> gently lift shadows
+            gamma = 0.72
+        else:
+            return frame
+
+        lut = np.array([((i / 255.0) ** gamma) * 255.0 for i in range(256)], dtype=np.uint8)
+        return cv2.LUT(frame, lut)
 
     def _draw_detection_overlay(self, image: np.ndarray, detection: Dict[str, Any]):
         """Render high-contrast, professional bounding box and severity HUD badge."""

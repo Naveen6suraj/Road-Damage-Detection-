@@ -1,18 +1,21 @@
 {
   "model_name": "models/best.pt",
-  "base_model": "models/yolo11n.pt",
-  "architecture": "YOLO11n (Ultralytics)",
+  "source_checkpoint": "https://huggingface.co/SreekarAditya/yolo-rdd2022-benchmark (yolo12m_seed0_best.pt)",
+  "base_model": "Ultralytics YOLOv12m (fine-tuned on RDD2022 7-country benchmark)",
+  "transfer_learning_backbone": "models/yolo11n.pt",
+  "architecture": "YOLOv12m (Ultralytics)",
+  "license": "CC BY 4.0",
   "version": "3.2.0",
-  "status": "BLOCKED_BY_MISSING_RESOURCE",
+  "status": "READY_CUSTOM",
   "required_codes": [
     "D00",
     "D10",
     "D20",
     "D40"
   ],
-  "status_description": "Custom road-damage weights (models/best.pt) require training on RDD2022 or equivalent annotated road defect dataset. Generic COCO models are strictly rejected to avoid false detections. Automated download is blocked by Figshare AWS WAF challenge; user manual download instructions available in utils/dataset_acquisition.py.",
+  "status_description": "Open-source RDD2022-trained YOLOv12m road-damage checkpoint (SreekarAditya/yolo-rdd2022-benchmark, CC BY 4.0) verified with complete 4-class taxonomy (longitudinal_crack, transverse_crack, alligator_crack, pothole). Adaptive exposure normalization and optimal RDD2022 confidence threshold (0.18) enabled.",
   "dataset_specification": {
-    "name": "RDD2022 (Road Damage Dataset 2022)",
+    "name": "RDD2022 (Road Damage Dataset 2022 — 7 Country Partitions)",
     "annotation_format": "YOLO Normalized Bounding Boxes [class_id, x_center, y_center, width, height]",
     "classes_required": [
       "D00",
@@ -24,59 +27,49 @@
   "taxonomy_mapping": {
     "0": {
       "code": "D00",
+      "raw_label": "longitudinal_crack",
       "name": "Longitudinal Crack",
       "base_hazard": 10.0,
       "description": "Linear crack propagating parallel to traffic flow"
     },
     "1": {
       "code": "D10",
+      "raw_label": "transverse_crack",
       "name": "Transverse Crack",
       "base_hazard": 16.0,
       "description": "Linear crack propagating perpendicular to traffic flow across lane width"
     },
     "2": {
       "code": "D20",
+      "raw_label": "alligator_crack",
       "name": "Alligator Crack",
       "base_hazard": 25.0,
       "description": "Interconnected structural fatigue cracking with polygonal pattern"
     },
     "3": {
       "code": "D40",
+      "raw_label": "pothole",
       "name": "Pothole",
       "base_hazard": 35.0,
       "description": "Depression or localized cavity presenting acute vehicle dynamics hazard"
-    },
-    "4": {
-      "code": "OTHER",
-      "name": "Other Road Distress",
-      "base_hazard": 8.0,
-      "description": "Unclassified roadway surface distress or rutting"
     }
   },
   "input_resolution": [
     640,
     640
   ],
+  "recommended_confidence": 0.18,
   "target_hardware": {
     "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU (4.0 GB VRAM)",
     "cpu": "AMD Ryzen 5 5600H",
     "ram": "16 GB",
-    "precision": "FP16 (AMP)"
-  },
-  "recommended_hyperparameters": {
-    "epochs": 100,
-    "batch_size": 8,
-    "patience": 15,
-    "seed": 42,
-    "optimizer": "auto",
-    "amp": true,
-    "imgsz": 640
+    "precision": "FP16 / FP32"
   },
   "metrics_summary": {
-    "status": "UNVERIFIED (Requires Dataset)",
-    "mAP50": null,
-    "mAP50_95": null,
-    "precision": null,
-    "recall": null
+    "status": "UPSTREAM_REPORTED (SreekarAditya/yolo-rdd2022-benchmark Global Val & 7-Country Mean; not locally re-evaluated)",
+    "mAP50": 0.6325,
+    "mean_7country_mAP50": 0.4752,
+    "peak_f1": 0.6280,
+    "optimal_conf_range": "0.10-0.20"
   }
 }

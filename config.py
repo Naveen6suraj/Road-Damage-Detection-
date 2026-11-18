@@ -54,7 +54,7 @@ DEVICE_NAME = torch.cuda.get_device_name(0) if CUDA_AVAILABLE else "CPU"
 # YOLO Model Configuration
 MODEL_WEIGHTS_PATH = os.path.join(MODEL_FOLDER, "best.pt")
 FALLBACK_MODEL_NAME = "yolo11n.pt"  # Pretrained base for transfer learning ONLY
-DEFAULT_CONFIDENCE = 0.25
+DEFAULT_CONFIDENCE = 0.18
 DEFAULT_IOU = 0.45
 DEFAULT_IMGSZ = 640
 
@@ -78,18 +78,22 @@ CLASS_CODES = {
 # Accepted Class Aliases for Custom Models
 CLASS_ALIAS_MAP = {
     "longitudinal crack": 0,
+    "longitudinal_crack": 0,
     "longitudinal": 0,
     "d00": 0,
     "transverse crack": 1,
+    "transverse_crack": 1,
     "transverse": 1,
     "d10": 1,
     "alligator crack": 2,
+    "alligator_crack": 2,
     "alligator": 2,
     "d20": 2,
     "pothole": 3,
     "potholes": 3,
     "d40": 3,
     "other corruption": 4,
+    "other_corruption": 4,
     "other": 4,
     "d43": 4,
     "d44": 4,
